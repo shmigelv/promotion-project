@@ -1,13 +1,24 @@
 spring:
   datasource:
-    url: jdbc:postgresql://promotion-database-1.c3hjrogbshlp.us-east-2.rds.amazonaws.com:5432/postgres
-    username: shmigel
+    url: jdbc:postgresql://promotion-database-1.c3hjrogbshlp.us-east-2.rds.amazonaws.com/postgres
+    username: postgres_admin
     password: vbrtwe53
     driver-class-name: org.postgresql.Driver
   flyway:
     locations: classpath:db.migration
+  jpa:
+    show-sql: true
+#    open-in-view: false
 
+server:
+  servlet:
+    context-path: /api
 
-logging:
-  level:
-    org.flyway: info
+logging.level:
+  org.flyway: info
+#  org.hibernate.SQL: debug
+#  org.hibernate.type.descriptor.sql: trace
+
+jwt:
+  key: promotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKey
+  issuer: promotionProject
