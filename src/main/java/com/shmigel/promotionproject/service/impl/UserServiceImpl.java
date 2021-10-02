@@ -6,6 +6,7 @@ import com.shmigel.promotionproject.repository.UserRepository;
 import com.shmigel.promotionproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,16 +17,23 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
     private UserRepository userRepository;
 
-    public Optional<User> findUser(String username) {
-        return userRepository.findUserByUsername(username);
+    private PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public User saveUser(String username, String password) {
-        return userRepository.save(new User(username, password));
+        return userRepository.save(new User(username, passwordEncoder.encode(password)));
+    }
+
+    @Override
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 
     @Override
@@ -63,7 +71,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (Objects.isNull(user.get().getRole())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with id: " + userId + " has different role: " + role);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with id: " + userId + " has different role");
         }
 
         return user.get();
@@ -83,6 +91,11 @@ public class UserServiceImpl implements UserService {
 
         user.get().setRole(Roles.fromValue(roleName));
         userRepository.save(user.get());
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
     }
 
 }

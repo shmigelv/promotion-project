@@ -7,12 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class JwtDTO {
 
-    private Long id;
-
-    private String username;
-
-    private String role;
+    private String token;
+    private long expiresAt;
 
 }

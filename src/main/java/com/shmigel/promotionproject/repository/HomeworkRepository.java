@@ -12,4 +12,8 @@ public interface HomeworkRepository extends CrudRepository<Homework, Long> {
 
     Collection<Homework> findByStudentIdAndLessonIdIn(Long studentId, Collection<Long> lessonIds);
 
+    Collection<Homework> findAllByLessonCourseIdAndStudentId(Long courseId, Long studentId);
+
+    boolean existsByLessonIdAndStudentId(Long lessonId, Long studentId);
+
 }

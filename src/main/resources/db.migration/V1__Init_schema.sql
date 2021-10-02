@@ -25,12 +25,10 @@ ALTER TABLE "instructor_courses"
 ALTER TABLE "instructor_courses"
     ADD CONSTRAINT "fk_instructor_courses__course_id" FOREIGN KEY ("course_id") REFERENCES "courses" ("id") ON DELETE CASCADE;
 
-CREATE TABLE "student_courses"
-(
-    "id"              SERIAL PRIMARY KEY,
-    "user_id"         INTEGER NOT NULL,
-    "course_id"       INTEGER NOT NULL,
-    "course_feedback" TEXT    NOT NULL
+CREATE TABLE "student_courses" (
+    "id"        SERIAL PRIMARY KEY,
+    "user_id"   INTEGER NOT NULL,
+    "course_id" INTEGER NOT NULL
 );
 
 ALTER TABLE "student_courses"
@@ -49,21 +47,13 @@ CREATE TABLE "lessons"
 ALTER TABLE "lessons"
     ADD CONSTRAINT "fk_lessons__course_id" FOREIGN KEY ("course_id") REFERENCES "courses" ("id") ON DELETE CASCADE;
 
-CREATE TABLE "homework_files"
-(
-    "id"        SERIAL PRIMARY KEY,
-    "file_name" TEXT NOT NULL,
-    "file_text" TEXT NOT NULL,
-    "checksum"  TEXT NOT NULL
-);
-
 CREATE TABLE "homeworks"
 (
-    "id"               SERIAL PRIMARY KEY,
-    "user_id"          INTEGER NOT NULL,
-    "lesson_id"        INTEGER NOT NULL,
-    "mark"             INTEGER,
-    "homework_file_id" INTEGER NOT NULL
+    "id"                SERIAL PRIMARY KEY,
+    "user_id"           INTEGER NOT NULL,
+    "lesson_id"         INTEGER NOT NULL,
+    "mark"              INTEGER,
+    "homework_file_key" TEXT
 );
 
 ALTER TABLE "homeworks"
@@ -71,9 +61,6 @@ ALTER TABLE "homeworks"
 
 ALTER TABLE "homeworks"
     ADD CONSTRAINT "fk_homeworks__user_id" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "homeworks"
-    ADD CONSTRAINT "fk_homeworks__homework_file_id" FOREIGN KEY ("homework_file_id") REFERENCES "homework_files" ("id") ON DELETE CASCADE;
 
 CREATE TABLE "course_feedbacks"
 (

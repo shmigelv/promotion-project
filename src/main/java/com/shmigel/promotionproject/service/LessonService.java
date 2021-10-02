@@ -12,4 +12,6 @@ public interface LessonService {
 
     Collection<Lesson> saveAll(Collection<Lesson> lessons);
 
+    Long getNumberOfLessonsByCourse(Long courseId);
+
 }

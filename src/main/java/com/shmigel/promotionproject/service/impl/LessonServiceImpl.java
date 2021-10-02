@@ -17,15 +17,7 @@ import java.util.Collection;
 @Service
 public class LessonServiceImpl implements LessonService {
 
-    private LessonRepository lessonRepository;
-
-    private HomeworkService homeworkService;
-
-    private AuthenticationProvider authenticationProvider;
-
-    private UserService userService;
-
-    private CourseService courseService;
+    private final LessonRepository lessonRepository;
 
     @Autowired
     public LessonServiceImpl(LessonRepository lessonRepository) {
@@ -46,5 +38,10 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public Collection<Lesson> saveAll(Collection<Lesson> lessons) {
         return CollectionUtil.toCollection(lessonRepository.saveAll(lessons));
+    }
+
+    @Override
+    public Long getNumberOfLessonsByCourse(Long courseId) {
+        return lessonRepository.countByCourseId(courseId);
     }
 }

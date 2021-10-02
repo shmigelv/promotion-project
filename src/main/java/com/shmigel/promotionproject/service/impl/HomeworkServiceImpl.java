@@ -1,8 +1,11 @@
 package com.shmigel.promotionproject.service.impl;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.shmigel.promotionproject.model.dto.MarkDTO;
 import com.shmigel.promotionproject.model.*;
 import com.shmigel.promotionproject.model.dto.AuthenticationDTO;
+import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.repository.HomeworkRepository;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.HomeworkService;
@@ -10,15 +13,15 @@ import com.shmigel.promotionproject.service.LessonService;
 import com.shmigel.promotionproject.service.UserService;
 import com.shmigel.promotionproject.util.IOUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class HomeworkServiceImpl implements HomeworkService {
@@ -31,17 +34,18 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     private HomeworkRepository homeworkRepository;
 
-    private AuthenticationProvider authenticationProvider;
+    private AmazonS3Client s3Client;
+
+    @Value("cloud.aws.bucket-name")
+    private String bucketName;
 
     @Autowired
     public HomeworkServiceImpl(UserService userService, LessonService lessonService,
-                               HomeworkRepository homeworkRepository, CourseService courseService,
-                               AuthenticationProvider authenticationProvider) {
+                               HomeworkRepository homeworkRepository, CourseService courseService) {
         this.userService = userService;
         this.lessonService = lessonService;
         this.courseService = courseService;
         this.homeworkRepository = homeworkRepository;
-        this.authenticationProvider = authenticationProvider;
     }
 
     @Override
@@ -50,32 +54,39 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     @Override
-    public void uploadHomework(Long studentId, Long lessonId, MultipartFile file) {
+    public Homework uploadHomework(Long studentId, Long lessonId, MultipartFile file) {
         User student = userService.findByIdAndRole(studentId, Roles.ROLE_STUDENT);
         Lesson lesson = lessonService.getLessonById(lessonId);
 
-        Optional<Homework> homework = homeworkRepository.findByStudentIdAndLessonId(studentId, lessonId);
+        boolean userSubscribedToCourse = courseService.isUserSubscribedToCourse(lesson.getCourse().getId(), studentId);
+        if (!userSubscribedToCourse) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student should be subscribed to the course");
+        }
 
-        if (homework.isPresent() && Objects.nonNull(homework.get().getHomeworkFile())) {
+        Optional<Homework> homework = homeworkRepository.findByStudentIdAndLessonId(studentId, lessonId);
+        if (homework.isPresent() && StringUtils.hasText(homework.get().getHomeworkFileKey())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Homework with file already has been submitted");
+        } else if (homework.isPresent()) {
+            homework.get().setHomeworkFileKey(saveHomeworkFile(lesson, student, file));
+            return homeworkRepository.save(homework.get());
         } else {
-            createHomework(lesson, student, file);
+            String fileKey = saveHomeworkFile(lesson, student, file);
+            Homework newHomework = Homework.builder().lesson(lesson).student(student).homeworkFileKey(fileKey).build();
+            return homeworkRepository.save(newHomework);
         }
     }
 
-    @Override
-    public Homework createHomework(Lesson lesson, User student, MultipartFile file) {
-        String fileText = IOUtil.read(file);
-        HomeworkFile homeworkFile = new HomeworkFile(file.getOriginalFilename(), fileText, IOUtil.getMd5Checksum(fileText));
-        Homework newHomework = Homework.builder().lesson(lesson).student(student).homeworkFile(homeworkFile).build();
-        return homeworkRepository.save(newHomework);
+    private String saveHomeworkFile(Lesson lesson, User student, MultipartFile file) {
+        final String key = student.getId() + "_" + lesson.getId() + UUID.randomUUID();
+        s3Client.putObject(bucketName, key, IOUtil.getInputStream(file), new ObjectMetadata());
+        return key;
     }
 
     @Override
     @Transactional
     public void putStudentMarkForLesson(Long studentId, Long lessonId, MarkDTO mark) {
         Lesson lesson = lessonService.getLessonById(lessonId);
-        AuthenticationDTO authentication = authenticationProvider.getAuthentication();
+        AuthenticationDTO authentication = AuthenticationProvider.getAuthentication();
         User currentUser = userService.findByIdAndRole(authentication.getUserId(), Roles.ROLE_INSTRUCTOR);
         User student = userService.findByIdAndRole(studentId, Roles.ROLE_STUDENT);
 
@@ -94,6 +105,11 @@ public class HomeworkServiceImpl implements HomeworkService {
         } else {
             homeworkRepository.save(Homework.builder().mark(mark.getMark()).lesson(lesson).student(student).build());
         }
+    }
+
+    @Override
+    public Collection<Homework> getAllHomeworksByCourseIdAndStudentId(Long courseId, Long studentId) {
+        return homeworkRepository.findAllByLessonCourseIdAndStudentId(courseId, studentId);
     }
 
 }

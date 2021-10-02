@@ -27,7 +27,6 @@ public class Homework {
 
     private Integer mark;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private HomeworkFile homeworkFile;
+    private String homeworkFileKey;
 
 }
