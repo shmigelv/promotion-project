@@ -71,7 +71,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             return homeworkRepository.save(homework.get());
         } else {
             String fileKey = saveHomeworkFile(lesson, student, file);
-            Homework newHomework = Homework.builder().lesson(lesson).student(student).homeworkFileKey(fileKey).build();
+            Homework newHomework = Homework.builder().lesson(lesson).student((Student) student).homeworkFileKey(fileKey).build();
             return homeworkRepository.save(newHomework);
         }
     }
@@ -103,7 +103,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         if (homework.isPresent() && Objects.nonNull(homework.get().getMark())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mark already has been set for this user lesson");
         } else {
-            homeworkRepository.save(Homework.builder().mark(mark.getMark()).lesson(lesson).student(student).build());
+            homeworkRepository.save(Homework.builder().mark(mark.getMark()).lesson(lesson).student((Student) student).build());
         }
     }
 

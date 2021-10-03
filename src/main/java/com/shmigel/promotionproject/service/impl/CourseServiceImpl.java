@@ -31,16 +31,13 @@ public class CourseServiceImpl implements CourseService {
 
     private LessonService lessonService;
 
-    private HomeworkService homeworkService;
-
     private CourseMapper courseMapper;
 
     public CourseServiceImpl(CourseRepository courseRepository, UserService userService, LessonService lessonService,
-                             HomeworkService homeworkService, CourseMapper courseMapper) {
+                             CourseMapper courseMapper) {
         this.courseRepository = courseRepository;
         this.userService = userService;
         this.lessonService = lessonService;
-        this.homeworkService = homeworkService;
         this.courseMapper = courseMapper;
     }
 
@@ -68,7 +65,7 @@ public class CourseServiceImpl implements CourseService {
                     "User with id: " + studentId + " can't subscribe to more than 5 courses");
         }
 
-        course.getStudents().add(student);
+//        course.getStudents().add(student);
         courseRepository.save(course);
     }
 
@@ -129,7 +126,8 @@ public class CourseServiceImpl implements CourseService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student should be subscribed to given course");
         }
 
-        Collection<Homework> userCourseHomeworks = homeworkService.getAllHomeworksByCourseIdAndStudentId(courseId, studentId);
+//        Collection<Homework> userCourseHomeworks = homeworkService.getAllHomeworksByCourseIdAndStudentId(courseId, studentId);
+        Collection<Homework> userCourseHomeworks = List.of();
         Long lessonsInCourse = lessonService.getNumberOfLessonsByCourse(courseId);
 
         if (userCourseHomeworks.size() != lessonsInCourse) {
