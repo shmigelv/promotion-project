@@ -1,15 +1,14 @@
 package com.shmigel.promotionproject;
 
-import com.shmigel.promotionproject.model.Student;
-import com.shmigel.promotionproject.repository.StudentRepository;
-import com.shmigel.promotionproject.repository.UserRepository;
+import com.shmigel.promotionproject.model.dto.LessonDetailsDTO;
+import com.shmigel.promotionproject.repository.LessonRepository;
+import com.shmigel.promotionproject.service.LessonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.Collection;
 
 @SpringBootApplication
 public class Application {

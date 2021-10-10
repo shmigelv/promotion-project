@@ -20,4 +20,6 @@ public class CourseDTO {
 
     private Collection<Long> studentIds;
 
+    private Collection<Long> lessonIds;
+
 }

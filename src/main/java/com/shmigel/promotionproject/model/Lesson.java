@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,33 +25,17 @@ public class Lesson {
     @ManyToOne
     private Course course;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "lesson_id")
-    private List<Homework> homeworks;
+    private Collection<Homework> homeworks = new ArrayList<>();
+
+    public Lesson(String title) {
+        this.title = title;
+    }
 
     public Lesson(String title, Course course) {
         this.title = title;
         this.course = course;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Lesson lesson = (Lesson) o;
-        return Objects.equals(title, lesson.title);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(title);
-    }
-
-    @Override
-    public String toString() {
-        return "Lesson{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                '}';
-    }
 }

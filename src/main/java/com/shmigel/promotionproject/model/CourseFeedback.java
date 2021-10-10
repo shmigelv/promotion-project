@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@Table(name = "course_feedbacks")
 @Entity
 @Data
 @NoArgsConstructor
@@ -13,13 +14,15 @@ import javax.persistence.*;
 public class CourseFeedback {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "course_feedbacks_id_seq")
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "course_id")
     private Course course;
 
     @ManyToOne
+    @JoinColumn(name = "student_id")
     private User student;
 
     private String feedback;

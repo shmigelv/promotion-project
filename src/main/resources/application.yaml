@@ -10,16 +10,8 @@ spring:
     show-sql: true
 #    open-in-view: false
 
-cloud:
-  aws:
-    region:
-      static: us-east-2
-    stack:
-      auto: false
-    credentials:
-      access-key: AKIAVEA3ZIKRJWT6DZMC
-      secret-key: 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
-    bucket-name: spring-boot-s3-poc
+document:
+  bucket-name: promotion-project
 
 server:
   servlet:
@@ -27,8 +19,11 @@ server:
 
 logging.level:
   org.flyway: info
-#  org.hibernate.SQL: debug
-#  org.hibernate.type.descriptor.sql: trace
+  org.hibernate.SQL: debug
+  org.hibernate.type.descriptor.sql: trace
+
+aws:
+  homeworks-path: promotion-project/homeworks
 
 jwt:
   key: promotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKey

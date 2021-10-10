@@ -14,5 +14,5 @@ import java.lang.annotation.RetentionPolicy;
 @AutoConfigureEmbeddedDatabase
 @SpringBootTest(classes = {Application.class, TestUtil.class})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DefaultTestConfiguration {
+public @interface ApiTestConfiguration {
 }

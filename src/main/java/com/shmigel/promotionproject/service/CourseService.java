@@ -1,13 +1,10 @@
 package com.shmigel.promotionproject.service;
 
 import com.shmigel.promotionproject.model.Course;
-import com.shmigel.promotionproject.model.CourseStatus;
-import com.shmigel.promotionproject.model.User;
-import com.shmigel.promotionproject.model.dto.CourseDTO;
-import com.shmigel.promotionproject.model.dto.CourseDetailsDTO;
-import com.shmigel.promotionproject.model.dto.CreateCourseDTO;
+import com.shmigel.promotionproject.model.dto.*;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface CourseService {
 
@@ -19,15 +16,14 @@ public interface CourseService {
 
     Collection<Course> getStudentCourses(Long userId);
 
-    Collection<User> getCourseStudents(Long courseId);
+    Collection<UserDTO> getCourseStudents(Long courseId);
 
     CourseDTO createCourse(CreateCourseDTO createCourseDTO);
 
     void assignInstructorToCourse(Long userId, Long courseId);
 
-    CourseStatus getCourseStatus(Long studentId, Long courseId);
+    CourseStatusDTO getCourseStatus(Long studentId, Long courseId);
 
     boolean isUserSubscribedToCourse(Long courseId, Long studentId);
 
-    CourseDetailsDTO getCourseDetails(Long courseId);
 }

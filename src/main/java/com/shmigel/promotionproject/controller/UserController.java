@@ -9,31 +9,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin")
-public class AdminController {
+@RequestMapping("/users")
+public class UserController {
 
     private final UserService userService;
 
-    private final CourseService courseService;
-
     @Autowired
-    public AdminController(UserService userService, CourseService courseService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.courseService = courseService;
     }
 
-    @PutMapping("/users/{userId}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{userId}/role")
     public ResponseEntity<Void> assignRoleForUser(@PathVariable Long userId, @RequestBody String role) {
         userService.setUserRole(userId, role);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/courses")
-    public ResponseEntity<CourseDTO> createCourse(@RequestBody CreateCourseDTO course) {
-        return ResponseEntity.ok(courseService.createCourse(course));
     }
 
 }

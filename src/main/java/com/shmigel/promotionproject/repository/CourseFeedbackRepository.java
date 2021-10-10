@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface CourseFeedbackRepository extends CrudRepository<CourseFeedback, Long> {
 
-    Optional<CourseFeedback> findByStudentIdAndCourseId(Long studentId, Long courseId);
+    boolean existsByStudentIdAndCourseId(Long studentId, Long courseId);
 
 }

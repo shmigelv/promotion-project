@@ -2,10 +2,8 @@ package com.shmigel.promotionproject.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class LessonDetailsDTO {
 
@@ -15,6 +13,6 @@ public class LessonDetailsDTO {
 
     private boolean homeworkUploaded;
 
-    private MarkDTO mark;
+    private Integer mark;
 
 }

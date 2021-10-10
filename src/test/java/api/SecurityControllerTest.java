@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import util.DefaultTestConfiguration;
+import util.ApiTestConfiguration;
 
 import java.util.Collection;
 
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static util.JacksonUtil.serialize;
 
-@DefaultTestConfiguration
+@ApiTestConfiguration
 public class SecurityControllerTest {
 
     @Autowired

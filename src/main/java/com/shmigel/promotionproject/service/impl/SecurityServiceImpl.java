@@ -1,6 +1,8 @@
 package com.shmigel.promotionproject.service.impl;
 
 import com.shmigel.promotionproject.config.properties.JwtProperties;
+import com.shmigel.promotionproject.exception.EntityNotFoundException;
+import com.shmigel.promotionproject.exception.IlligalUserInputException;
 import com.shmigel.promotionproject.model.dto.JwtDTO;
 import com.shmigel.promotionproject.model.dto.UserCredentialDTO;
 import com.shmigel.promotionproject.model.User;
@@ -9,12 +11,10 @@ import com.shmigel.promotionproject.model.mapper.UserMapper;
 import com.shmigel.promotionproject.service.SecurityService;
 import com.shmigel.promotionproject.service.UserService;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.SecretKey;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,15 +41,18 @@ public class SecurityServiceImpl implements SecurityService {
 
     private PasswordEncoder passwordEncoder;
 
+    private AuthenticationProvider authenticationProvider;
+
     private UserMapper userMapper;
 
     private static final String ROLE_CLAIM = "role";
 
-    public SecurityServiceImpl(UserService userService, JwtProperties jwtProperties,
-                               PasswordEncoder passwordEncoder, UserMapper userMapper) {
+    public SecurityServiceImpl(UserService userService, JwtProperties jwtProperties, PasswordEncoder passwordEncoder,
+                               AuthenticationProvider authenticationProvider, UserMapper userMapper) {
         this.userService = userService;
         this.jwtProperties = jwtProperties;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationProvider = authenticationProvider;
         this.userMapper = userMapper;
     }
 
@@ -60,13 +62,13 @@ public class SecurityServiceImpl implements SecurityService {
         User user = userService.getUserByUsername(loginRequest.getUsername());
 
         if (isNull(user) || user.getPassword().equals(passwordEncoder.encode(loginRequest.getPassword()))) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't login");
+            throw new EntityNotFoundException("Can't find user for given credentials");
         }
 
-        return generateJwtDTO(user);
+        return generateJwt(user);
     }
 
-    private JwtDTO generateJwtDTO(User user) {
+    private JwtDTO generateJwt(User user) {
         SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getKey()));
 
         Date tokenExpirationDate = getDefaultTokenExpirationDate();
@@ -82,10 +84,8 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public UserDTO register(UserCredentialDTO userCredentialDTO) {
-        boolean userWithUsernameExists = userService.existsByUsername(userCredentialDTO.getUsername());
-
-        if (userWithUsernameExists) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with given username already exists");
+        if (userService.existsByUsername(userCredentialDTO.getUsername())) {
+            throw new IlligalUserInputException("User with given username already exists");
         }
 
         User createdUser = userService.saveUser(userCredentialDTO.getUsername(), userCredentialDTO.getPassword());
@@ -94,7 +94,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public UserDTO getAuthenticatedUser() {
-        Long userId = AuthenticationProvider.getAuthentication().getUserId();
+        Long userId = authenticationProvider.getAuthentication().getUserId();
         User authenticatedUser = userService.getUserById(userId);
         return userMapper.toUserDTO(authenticatedUser);
     }

@@ -1,9 +1,9 @@
 package com.shmigel.promotionproject.service;
 
-import com.shmigel.promotionproject.model.CourseFeedback;
+import com.shmigel.promotionproject.model.dto.CourseFeedbackDTO;
 
 public interface CourseFeedbackService {
 
-    CourseFeedback createFeedback(Long studentId, Long courseId, String feedback);
+    CourseFeedbackDTO createFeedback(Long studentId, Long courseId, String feedback);
 
 }

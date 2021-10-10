@@ -1,7 +1,9 @@
 package com.shmigel.promotionproject.service.impl;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.shmigel.promotionproject.exception.IlligalUserInputException;
 import com.shmigel.promotionproject.model.dto.MarkDTO;
 import com.shmigel.promotionproject.model.*;
 import com.shmigel.promotionproject.model.dto.AuthenticationDTO;
@@ -34,18 +36,23 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     private HomeworkRepository homeworkRepository;
 
-    private AmazonS3Client s3Client;
+    private AuthenticationProvider authenticationProvider;
 
-    @Value("cloud.aws.bucket-name")
+    private final AmazonS3 s3Client;
+
+    @Value("${aws.homeworks-path}")
     private String bucketName;
 
     @Autowired
     public HomeworkServiceImpl(UserService userService, LessonService lessonService,
-                               HomeworkRepository homeworkRepository, CourseService courseService) {
+                               HomeworkRepository homeworkRepository, CourseService courseService,
+                               AuthenticationProvider authenticationProvider, AmazonS3 s3Client) {
         this.userService = userService;
         this.lessonService = lessonService;
         this.courseService = courseService;
         this.homeworkRepository = homeworkRepository;
+        this.authenticationProvider = authenticationProvider;
+        this.s3Client = s3Client;
     }
 
     @Override
@@ -60,24 +67,24 @@ public class HomeworkServiceImpl implements HomeworkService {
 
         boolean userSubscribedToCourse = courseService.isUserSubscribedToCourse(lesson.getCourse().getId(), studentId);
         if (!userSubscribedToCourse) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student should be subscribed to the course");
+            throw new IlligalUserInputException("Student should be subscribed to lessons' course");
         }
 
         Optional<Homework> homework = homeworkRepository.findByStudentIdAndLessonId(studentId, lessonId);
         if (homework.isPresent() && StringUtils.hasText(homework.get().getHomeworkFileKey())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Homework with file already has been submitted");
+            throw new IlligalUserInputException("Homework with file already has been submitted");
         } else if (homework.isPresent()) {
             homework.get().setHomeworkFileKey(saveHomeworkFile(lesson, student, file));
             return homeworkRepository.save(homework.get());
         } else {
             String fileKey = saveHomeworkFile(lesson, student, file);
-            Homework newHomework = Homework.builder().lesson(lesson).student((Student) student).homeworkFileKey(fileKey).build();
+            Homework newHomework = Homework.builder().lesson(lesson).student(student).homeworkFileKey(fileKey).build();
             return homeworkRepository.save(newHomework);
         }
     }
 
     private String saveHomeworkFile(Lesson lesson, User student, MultipartFile file) {
-        final String key = student.getId() + "_" + lesson.getId() + UUID.randomUUID();
+        final String key = student.getId() + "|" + lesson.getId() + "|" + UUID.randomUUID();
         s3Client.putObject(bucketName, key, IOUtil.getInputStream(file), new ObjectMetadata());
         return key;
     }
@@ -86,24 +93,23 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Transactional
     public void putStudentMarkForLesson(Long studentId, Long lessonId, MarkDTO mark) {
         Lesson lesson = lessonService.getLessonById(lessonId);
-        AuthenticationDTO authentication = AuthenticationProvider.getAuthentication();
+        AuthenticationDTO authentication = authenticationProvider.getAuthentication();
         User currentUser = userService.findByIdAndRole(authentication.getUserId(), Roles.ROLE_INSTRUCTOR);
         User student = userService.findByIdAndRole(studentId, Roles.ROLE_STUDENT);
 
         if (!lesson.getCourse().getInstructors().contains(currentUser)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Instructor can only put marks for his courses");
+            throw new IlligalUserInputException("Instructor can only put marks for his courses");
         }
 
-        Collection<Course> studentCourses = courseService.getStudentCourses(studentId);
-        if (!studentCourses.contains(lesson.getCourse())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Given student is not subscribed to that course");
+        if (!courseService.isUserSubscribedToCourse(lesson.getCourse().getId(), studentId)) {
+            throw new IlligalUserInputException("Given student is not subscribed to that course");
         }
 
         Optional<Homework> homework = homeworkRepository.findByStudentIdAndLessonId(studentId, lessonId);
         if (homework.isPresent() && Objects.nonNull(homework.get().getMark())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mark already has been set for this user lesson");
+            throw new IlligalUserInputException("Mark already has been set for this user lesson");
         } else {
-            homeworkRepository.save(Homework.builder().mark(mark.getMark()).lesson(lesson).student((Student) student).build());
+            homeworkRepository.save(Homework.builder().mark(mark.getMark()).lesson(lesson).student(student).build());
         }
     }
 

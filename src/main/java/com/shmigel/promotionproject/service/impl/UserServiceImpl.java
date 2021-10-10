@@ -1,5 +1,7 @@
 package com.shmigel.promotionproject.service.impl;
 
+import com.shmigel.promotionproject.exception.EntityNotFoundException;
+import com.shmigel.promotionproject.exception.IlligalUserInputException;
 import com.shmigel.promotionproject.model.Roles;
 import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.repository.UserRepository;
@@ -39,13 +41,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id: " + userId + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " not found"));
     }
 
     @Override
     public User getUserByUsername(String username) {
         return userRepository.findUserByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with username: " + username + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User with username: " + username + " not found"));
     }
 
     @Override
@@ -54,8 +56,7 @@ public class UserServiceImpl implements UserService {
 
         for (User user : users) {
             if (!role.equals(user.getRole())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "User with id: " + user.getId() + " didn't match expected role: " + role);
+                throw new IlligalUserInputException("User with id: " + user.getId() + " dont have expected role: " + role);
             }
         }
 
@@ -67,11 +68,11 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = userRepository.findById(userId);
 
         if (user.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id: " + userId + " is not found");
+            throw new EntityNotFoundException("User with id: " + userId + " is not found");
         }
 
         if (Objects.isNull(user.get().getRole())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with id: " + userId + " has different role");
+            throw new EntityNotFoundException("User with id: " + userId + " has different role");
         }
 
         return user.get();
@@ -82,11 +83,11 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = userRepository.findById(userId);
 
         if (user.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id: " + userId + " is not found");
+            throw new EntityNotFoundException("User with id: " + userId + " is not found");
         }
 
         if (Objects.nonNull(user.get().getRole())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id: " + userId + " already has role assigned");
+            throw new EntityNotFoundException("User with id: " + userId + " already has role assigned");
         }
 
         user.get().setRole(Roles.fromValue(roleName));

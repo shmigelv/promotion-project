@@ -20,8 +20,8 @@ public class Homework {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Student student;
+    @JoinColumn(name = "student_id")
+    private User student;
 
     @ManyToOne
     private Lesson lesson;

@@ -1,11 +1,9 @@
 package com.shmigel.promotionproject.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -14,7 +12,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Getter
+@Data
 public class Course {
 
     @Id
@@ -29,18 +27,33 @@ public class Course {
             joinColumns = @JoinColumn(name = "course_id"),
             inverseJoinColumns = @JoinColumn(name = "instructor_id")
     )
-    private Collection<User> instructors;
+    private Collection<User> instructors = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "student_courses",
             joinColumns = @JoinColumn(name = "course_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id")
     )
-    private Collection<User> students;
+    private Collection<User> students = new ArrayList<>();
 
-    @OneToMany
-    private Collection<Lesson> lessons;
+    @OneToMany(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "course_id")
+    private Collection<Lesson> lessons = new ArrayList<>();
+
+    public Course(String title, Collection<User> instructors) {
+        this.title = title;
+        this.instructors = instructors;
+    }
+
+    public Course(String title) {
+        this.title = title;
+    }
+
+    public void addLesson(Lesson lesson) {
+        this.getLessons().add(lesson);
+        lesson.setCourse(this);
+    }
 
     @Override
     public boolean equals(Object o) {
