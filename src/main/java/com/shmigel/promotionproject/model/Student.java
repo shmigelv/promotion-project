@@ -1,24 +1,22 @@
 package com.shmigel.promotionproject.model;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.persistence.*;
+import java.util.Collection;
 
 @Entity
+@Getter
+@Setter
 @DiscriminatorValue("ROLE_STUDENT")
 public class Student extends User {
 
     @OneToMany
     @JoinColumn(name = "student_id")
-    private List<Homework> homeworks;
+    private Collection<Homework> homeworks;
 
-    public List<Homework> getHomeworks() {
-        return homeworks;
-    }
+    @ManyToMany(mappedBy = "students")
+    private Collection<Course> courses;
 
-    public void setHomeworks(List<Homework> homeworks) {
-        this.homeworks = homeworks;
-    }
 }

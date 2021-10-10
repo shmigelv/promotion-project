@@ -30,4 +30,13 @@ public class Homework {
 
     private String homeworkFileKey;
 
+
+    @Override
+    public String toString() {
+        return "Homework{" +
+                "id=" + id +
+                ", mark=" + mark +
+                ", homeworkFileKey='" + homeworkFileKey + '\'' +
+                '}';
+    }
 }
