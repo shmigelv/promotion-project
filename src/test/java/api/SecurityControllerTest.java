@@ -49,7 +49,7 @@ public class SecurityControllerTest {
     @Test
     void userCanRegister() throws Exception {
         //GIVEN valid new user credentials
-        UserCredentialDTO userCredential = new UserCredentialDTO("user1", "pass1");
+        UserCredentialDTO userCredential = new UserCredentialDTO("user", "pass");
 
         // WHEN user tries to register
         ResultActions resultActions = mockMvc.perform(post("/security/register")
@@ -60,11 +60,11 @@ public class SecurityControllerTest {
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.username").value("user1"));
+                .andExpect(jsonPath("$.username").value("user"));
 
         User createdUser = userService.getUserByUsername(userCredential.getUsername());
-        assertEquals("user1", createdUser.getUsername());
-        assertTrue(passwordEncoder.matches("pass1", createdUser.getPassword()));
+        assertEquals("user", createdUser.getUsername());
+        assertTrue(passwordEncoder.matches("pass", createdUser.getPassword()));
     }
 
     @Test

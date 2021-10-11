@@ -59,7 +59,7 @@ public class UserControllerTest {
     void adminCanAssignRoleToUser() throws Exception {
         // GIVEN existing admin and user without role
         Admin admin = testUtil.createTestAdmin();
-        User user = userService.saveUser(new User("student", "pass1"));
+        User user = userService.saveUser(new User("student", "pass"));
 
         // WHEN admin setts role to a user without role
         String jwt = testUtil.getAuthToken(admin);
@@ -72,9 +72,9 @@ public class UserControllerTest {
         // THEN role is set for user
         resultActions.andExpect(status().isOk());
 
-        User student = userService.getStudentById(user.getId());
+        User student = userService.getUserByUsername(user.getUsername());
         assertNotNull(student);
-        assertNotNull(student.getRole());
+        assertEquals(Roles.ROLE_STUDENT, student.getRole());
     }
 
     @Test
