@@ -2,10 +2,10 @@ package com.shmigel.promotionproject.service.impl;
 
 import com.shmigel.promotionproject.config.properties.JwtProperties;
 import com.shmigel.promotionproject.exception.EntityNotFoundException;
-import com.shmigel.promotionproject.exception.IlligalUserInputException;
+import com.shmigel.promotionproject.exception.IllegalUserInputException;
+import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.JwtDTO;
 import com.shmigel.promotionproject.model.dto.UserCredentialDTO;
-import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.UserDTO;
 import com.shmigel.promotionproject.model.mapper.UserMapper;
 import com.shmigel.promotionproject.service.SecurityService;
@@ -15,14 +15,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.SecretKey;
 import java.util.Arrays;
@@ -35,15 +34,15 @@ import static java.util.Objects.isNull;
 @Service
 public class SecurityServiceImpl implements SecurityService {
 
-    private UserService userService;
+    private final UserService userService;
 
-    private JwtProperties jwtProperties;
+    private final JwtProperties jwtProperties;
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    private AuthenticationProvider authenticationProvider;
+    private final AuthenticationProvider authenticationProvider;
 
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
     private static final String ROLE_CLAIM = "role";
 
@@ -61,7 +60,7 @@ public class SecurityServiceImpl implements SecurityService {
     public JwtDTO login(UserCredentialDTO loginRequest) {
         User user = userService.getUserByUsername(loginRequest.getUsername());
 
-        if (isNull(user) || user.getPassword().equals(passwordEncoder.encode(loginRequest.getPassword()))) {
+        if (isNull(user) || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new EntityNotFoundException("Can't find user for given credentials");
         }
 
@@ -85,11 +84,11 @@ public class SecurityServiceImpl implements SecurityService {
     @Override
     public UserDTO register(UserCredentialDTO userCredentialDTO) {
         if (userService.existsByUsername(userCredentialDTO.getUsername())) {
-            throw new IlligalUserInputException("User with given username already exists");
+            throw new IllegalUserInputException("User with given username already exists");
         }
 
-        User createdUser = userService.saveUser(userCredentialDTO.getUsername(), userCredentialDTO.getPassword());
-        return userMapper.toUserDTO(createdUser);
+        User newUser = new User(userCredentialDTO.getUsername(), passwordEncoder.encode(userCredentialDTO.getPassword()));
+        return userMapper.toUserDTO(userService.saveUser(newUser));
     }
 
     @Override
@@ -101,7 +100,8 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parser().setSigningKey(jwtProperties.getKey())
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(jwtProperties.getKey()).build()
                 .parseClaimsJws(token)
                 .getBody();
 

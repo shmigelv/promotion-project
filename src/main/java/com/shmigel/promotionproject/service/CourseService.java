@@ -1,14 +1,16 @@
 package com.shmigel.promotionproject.service;
 
 import com.shmigel.promotionproject.model.Course;
-import com.shmigel.promotionproject.model.dto.*;
+import com.shmigel.promotionproject.model.dto.CourseDTO;
+import com.shmigel.promotionproject.model.dto.CourseStatusDTO;
+import com.shmigel.promotionproject.model.dto.CreateCourseDTO;
+import com.shmigel.promotionproject.model.dto.UserDTO;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface CourseService {
 
-    void addStudentToCourse(Long userId, Long courseId);
+    void addStudentToCourse(Long courseId);
 
     Course getCourseById(Long courseId);
 

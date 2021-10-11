@@ -23,11 +23,11 @@ public class CourseFeedback {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private User student;
+    private Student student;
 
     private String feedback;
 
-    public CourseFeedback(Course course, User student, String feedback) {
+    public CourseFeedback(Course course, Student student, String feedback) {
         this.course = course;
         this.student = student;
         this.feedback = feedback;

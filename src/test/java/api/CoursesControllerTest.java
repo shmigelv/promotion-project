@@ -3,9 +3,7 @@ package api;
 import com.shmigel.promotionproject.model.*;
 import com.shmigel.promotionproject.model.dto.CourseDTO;
 import com.shmigel.promotionproject.model.dto.CreateCourseDTO;
-import com.shmigel.promotionproject.repository.CourseRepository;
-import com.shmigel.promotionproject.repository.HomeworkRepository;
-import com.shmigel.promotionproject.repository.LessonRepository;
+import com.shmigel.promotionproject.repository.*;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.LessonService;
 import com.shmigel.promotionproject.service.UserService;
@@ -18,6 +16,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import util.ApiTestConfiguration;
 import util.TestUtil;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +59,7 @@ public class CoursesControllerTest {
     @Test
     void studentCanSubscribeToTheCourse() throws Exception {
         // GIVEN student and course
-        User student = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
+        Student student = testUtil.createTestStudent();
         Course course = courseRepository.save(new Course("course"));
 
         // WHEN student subscribes to the course
@@ -75,9 +74,9 @@ public class CoursesControllerTest {
     @Test
     void studentCantSubscribeToTheCourse_whenStudentHasMoreThanFourCourses() throws Exception {
         // GIVEN student with 5 courses and new course
-        User student = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
+        Student student = testUtil.createTestStudent();
         IntStream.rangeClosed(1, 5).mapToObj(i -> new Course("course" + i))
-                .peek(i -> i.getStudents().add(student))
+                .peek(i -> i.addStudent(student))
                 .forEach(courseRepository::save);
 
         Course newCourse = courseRepository.save(new Course("course6"));
@@ -94,10 +93,10 @@ public class CoursesControllerTest {
     @Test
     void studentCantSubscribeToTheCourse_whenStudentAlreadySubscribedToCourse() throws Exception {
         // GIVEN student that already subscribed to course
-        User student = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
+        Student student = testUtil.createTestStudent();
         Course newCourse = courseRepository.save(new Course("course6"));
 
-        newCourse.getStudents().add(student);
+        newCourse.addStudent(student);
         courseRepository.save(newCourse);
 
         // WHEN student subscribes to the course
@@ -112,8 +111,8 @@ public class CoursesControllerTest {
     @Test
     void adminCanCreateCourse() throws Exception {
         // GIVEN admin with course creation information
-        User admin = userService.saveUser(new User("admin", "pass1", Roles.ROLE_ADMIN));
-        User instructor = userService.saveUser(new User("instructor", "pass1", Roles.ROLE_INSTRUCTOR));
+        Admin admin = testUtil.createTestAdmin();
+        Instructor instructor = testUtil.createTestInstructor();
 
         List<String> lessonNames = IntStream.rangeClosed(1, 5).mapToObj(i -> "lesson" + i).collect(Collectors.toList());
         CreateCourseDTO createCourse = new CreateCourseDTO("courseTitle", List.of(instructor.getId()), lessonNames);
@@ -144,7 +143,7 @@ public class CoursesControllerTest {
     @Test
     void adminCantCreateCourse_whenProvidedCourseInstructorsAreEmpty() throws Exception {
         // GIVEN admin with course creation information
-        User admin = userService.saveUser(new User("admin", "pass1", Roles.ROLE_ADMIN));
+        Admin admin = testUtil.createTestAdmin();
 
         CreateCourseDTO createCourse = new CreateCourseDTO("course", List.of(), List.of("1", "2", "3", "4", "5"));
 
@@ -162,8 +161,8 @@ public class CoursesControllerTest {
     @Test
     void adminCantCreateCourse_whenProvidedLessonsNameIsLessThanFive() throws Exception {
         // GIVEN admin with course creation information
-        User admin = userService.saveUser(new User("admin", "pass1", Roles.ROLE_ADMIN));
-        User instructor = userService.saveUser(new User("instructor", "pass1", Roles.ROLE_INSTRUCTOR));
+        Admin admin = testUtil.createTestAdmin();
+        Instructor instructor = testUtil.createTestInstructor();
 
         CreateCourseDTO createCourse = new CreateCourseDTO("course", List.of(instructor.getId()), List.of("1", "2", "3", "4"));
 
@@ -181,8 +180,10 @@ public class CoursesControllerTest {
     @Test
     void studentCanGetHisCourses() throws Exception {
         // GIVEN user with subscribed course
-        User student = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
-        Course course = courseRepository.save(Course.builder().title("course").students(List.of(student)).build());
+        Student student = testUtil.createTestStudent();
+        Course course = new Course("course");
+        course.addStudent(student);
+        courseRepository.save(course);
 
         // WHEN user wants to see his courses
         ResultActions resultActions = mockMvc.perform(get("/courses")
@@ -199,7 +200,7 @@ public class CoursesControllerTest {
     @Test
     void instructorCanGetHisCourses() throws Exception {
         // GIVEN instructor with course
-        User instructor = userService.saveUser(new User("instructor", "pass1", Roles.ROLE_INSTRUCTOR));
+        Instructor instructor = testUtil.createTestInstructor();
         Course course = courseRepository.save(Course.builder().title("course").instructors(List.of(instructor)).build());
 
         // WHEN instructor wants to see his courses
@@ -217,11 +218,11 @@ public class CoursesControllerTest {
     @Test
     void studentCanSeeHisCourseStatusInProgress_whenNoMarksHaveBeanSet() throws Exception {
         // GIVEN student with started course without marks
-        User student = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
+        Student student = testUtil.createTestStudent();
 
         Course newCourse = new Course("course");
         newCourse.addLesson(new Lesson("lesson"));
-        newCourse.setStudents(List.of(student));
+        newCourse.addStudent(student);
 
         courseRepository.save(newCourse);
 
@@ -238,13 +239,13 @@ public class CoursesControllerTest {
     @Test
     void studentCanSeeHisCourseStatusInProgress_whenAverageCourseMarkIsAcceptable() throws Exception {
         // GIVEN student with started course without marks
-        User student = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
+        Student student = testUtil.createTestStudent();
 
         Course newCourse = new Course("course");
         Lesson lesson = new Lesson("lesson");
 
         newCourse.addLesson(lesson);
-        newCourse.setStudents(List.of(student));
+        newCourse.addStudent(student);
         courseRepository.save(newCourse);
 
         Homework homework = Homework.builder().lesson(lesson).student(student).mark(80).build();
@@ -264,13 +265,13 @@ public class CoursesControllerTest {
     @Test
     void studentCanSeeHisCourseStatusInProgress_whenAverageCourseMarkIsNotAcceptable() throws Exception {
         // GIVEN student with started course without marks
-        User student = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
+        Student student = testUtil.createTestStudent();
 
         Course newCourse = new Course("course");
         Lesson lesson = new Lesson("lesson");
 
         newCourse.addLesson(lesson);
-        newCourse.setStudents(List.of(student));
+        newCourse.addStudent(student);
         courseRepository.save(newCourse);
 
         Homework homework = Homework.builder().lesson(lesson).student(student).mark(70).build();
@@ -289,8 +290,8 @@ public class CoursesControllerTest {
     @Test
     void instructorCanSeeListOfStudentsPerCourse() throws Exception {
         // GIVEN instructor with course, and student that subscribed to course
-        User instructor = userService.saveUser(new User("instructor", "pass", Roles.ROLE_INSTRUCTOR));
-        User student = userService.saveUser(new User("student", "pass", Roles.ROLE_STUDENT));
+        Instructor instructor = testUtil.createTestInstructor();
+        Student student = testUtil.createTestStudent();
 
         Course course = new Course("course", List.of(instructor));
         course.setStudents(List.of(student));
@@ -312,7 +313,7 @@ public class CoursesControllerTest {
     @Test
     void instructorCanSeeEmptyListOfStudents_whenNoUserSubscribedToTheCourse() throws Exception {
         // GIVEN instructor with course
-        User instructor = userService.saveUser(new User("instructor", "pass", Roles.ROLE_INSTRUCTOR));
+        Instructor instructor = testUtil.createTestInstructor();
 
         Course course = courseRepository.save(new Course("course", List.of(instructor)));
 
@@ -329,11 +330,11 @@ public class CoursesControllerTest {
     @Test
     void instructorCanCreateFeedbackForCourseStudent() throws Exception {
         // GIVEN instructor with course and student subscribed to it
-        User instructor = userService.saveUser(new User("instructor", "pass", Roles.ROLE_INSTRUCTOR));
-        User student = userService.saveUser(new User("student", "pass", Roles.ROLE_STUDENT));
+        Instructor instructor = testUtil.createTestInstructor();
+        Student student = testUtil.createTestStudent();
 
         Course course = new Course("course", List.of(instructor));
-        course.setStudents(List.of(student));
+        course.addStudent(student);
         courseRepository.save(course);
 
         // WHEN instructor creates feedback
@@ -354,7 +355,7 @@ public class CoursesControllerTest {
     @Test
     void studentCanSeeLessonsPerCourseWithAllRelatedInformation() throws Exception {
         // GIVEN student with course and homeworks for some lessons
-        User student = userService.saveUser(new User("student", "pass", Roles.ROLE_STUDENT));
+        Student student = testUtil.createTestStudent();
 
         Course course = new Course("course");
         Lesson firstLesson = new Lesson("lesson1");
@@ -383,8 +384,8 @@ public class CoursesControllerTest {
     @Test
     void adminShouldBeAbleToAssignInstructorToTheCourse() throws Exception {
         // GIVEN admin and instructor that is not assigned to course
-        User admin = userService.saveUser(new User("admin", "pass", Roles.ROLE_ADMIN));
-        User instructor = userService.saveUser(new User("instructor", "pass", Roles.ROLE_INSTRUCTOR));
+        Admin admin = testUtil.createTestAdmin();
+        Instructor instructor = testUtil.createTestInstructor();
         Course course = courseRepository.save(new Course("course"));
 
         // WHEN admin makes request to assign instructor to given course

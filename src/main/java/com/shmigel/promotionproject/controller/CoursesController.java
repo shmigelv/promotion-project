@@ -2,7 +2,6 @@ package com.shmigel.promotionproject.controller;
 
 import com.shmigel.promotionproject.model.dto.*;
 import com.shmigel.promotionproject.model.mapper.CourseMapper;
-import com.shmigel.promotionproject.model.mapper.UserMapper;
 import com.shmigel.promotionproject.service.CourseFeedbackService;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.LessonService;
@@ -19,34 +18,28 @@ import java.util.Collection;
 @RequestMapping("/courses")
 public class CoursesController {
 
-    private CourseService courseService;
+    private final CourseService courseService;
 
-    private CourseMapper courseMapper;
+    private final CourseMapper courseMapper;
 
-    private UserMapper userMapper;
+    private final CourseFeedbackService courseFeedbackService;
 
-    private CourseFeedbackService courseFeedbackService;
+    private final LessonService lessonService;
 
-    private LessonService lessonService;
-
-    private AuthenticationProvider authenticationProvider;
-
-    public CoursesController(CourseService courseService, CourseMapper courseMapper, UserMapper userMapper,
-                             CourseFeedbackService courseFeedbackService, LessonService lessonService, AuthenticationProvider authenticationProvider) {
+    public CoursesController(CourseService courseService, CourseMapper courseMapper,
+                             CourseFeedbackService courseFeedbackService, LessonService lessonService) {
         this.courseService = courseService;
         this.courseMapper = courseMapper;
-        this.userMapper = userMapper;
         this.courseFeedbackService = courseFeedbackService;
         this.lessonService = lessonService;
-        this.authenticationProvider = authenticationProvider;
     }
+
 
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/{courseId}/subscribe")
     public ResponseEntity<Void> subscribeToCourse(@PathVariable Long courseId) {
         log.info("Received request to subscribe to course with courseId: " + courseId);
-        Long userId = authenticationProvider.getAuthentication().getUserId();
-        courseService.addStudentToCourse(userId, courseId);
+        courseService.addStudentToCourse(courseId);
         return ResponseEntity.ok().build();
     }
 

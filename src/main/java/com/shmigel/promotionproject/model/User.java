@@ -11,7 +11,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="role", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name="role")
 public class User {
 
     @Id

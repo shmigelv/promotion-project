@@ -1,57 +1,46 @@
 package com.shmigel.promotionproject.service.impl;
 
 import com.shmigel.promotionproject.exception.EntityNotFoundException;
-import com.shmigel.promotionproject.exception.IlligalUserInputException;
+import com.shmigel.promotionproject.exception.IllegalUserInputException;
 import com.shmigel.promotionproject.model.*;
 import com.shmigel.promotionproject.model.dto.*;
 import com.shmigel.promotionproject.model.mapper.CourseMapper;
-import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.mapper.UserMapper;
 import com.shmigel.promotionproject.repository.CourseRepository;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.HomeworkService;
 import com.shmigel.promotionproject.service.LessonService;
 import com.shmigel.promotionproject.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl implements CourseService {
 
-    private CourseRepository courseRepository;
+    private final CourseRepository courseRepository;
 
-    private UserService userService;
+    private final UserService userService;
 
-    private LessonService lessonService;
+    private final LessonService lessonService;
 
-    private HomeworkService homeworkService;
+    private final HomeworkService homeworkService;
 
-    private CourseMapper courseMapper;
+    private final CourseMapper courseMapper;
 
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    private AuthenticationProvider authenticationProvider;
-
-    @Autowired
-    public void setHomeworkService(HomeworkService homeworkService) {
-        this.homeworkService = homeworkService;
-    }
+    private final AuthenticationProvider authenticationProvider;
 
     public CourseServiceImpl(CourseRepository courseRepository, UserService userService, LessonService lessonService,
-                             CourseMapper courseMapper, UserMapper userMapper, AuthenticationProvider authenticationProvider) {
+                             HomeworkService homeworkService, CourseMapper courseMapper, UserMapper userMapper,
+                             AuthenticationProvider authenticationProvider) {
         this.courseRepository = courseRepository;
         this.userService = userService;
         this.lessonService = lessonService;
+        this.homeworkService = homeworkService;
         this.courseMapper = courseMapper;
         this.userMapper = userMapper;
         this.authenticationProvider = authenticationProvider;
@@ -64,27 +53,26 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    @Transactional
-    public void addStudentToCourse(Long studentId, Long courseId) {
-        Course course = getCourseById(courseId);
+    public void addStudentToCourse(Long courseId) {
+        Long studentId = authenticationProvider.getAuthentication().getUserId();
 
-        User student = userService.findByIdAndRole(studentId, Roles.ROLE_STUDENT);
-        Collection<Course> userCourses = getStudentCourses(studentId);
+        Course targetCourse = getCourseById(courseId);
+        Student student = userService.getStudentById(studentId);
+        Collection<Course> studentCourses = student.getCourses();
 
-        if (userCourses.contains(course)) {
-            throw new IlligalUserInputException("User with id: " + studentId + "already subscribed to this course");
+        if (studentCourses.contains(targetCourse)) {
+            throw new IllegalUserInputException("User with id: " + studentId + " already subscribed to this course");
         }
 
-        if (userCourses.size() >= 5) {
-            throw new IlligalUserInputException("User with id: " + studentId + " can't subscribe to more than 5 courses");
+        if (studentCourses.size() >= 5) {
+            throw new IllegalUserInputException("User with id: " + studentId + " can't subscribe to more than 5 courses");
         }
 
-        course.getStudents().add(student);
-        courseRepository.save(course);
+        targetCourse.addStudent(student);
+        courseRepository.save(targetCourse);
     }
 
     @Override
-    @Transactional
     public Collection<Course> getUserCourses() {
         AuthenticationDTO authentication = authenticationProvider.getAuthentication();
         User user = userService.getUserById(authentication.getUserId());
@@ -103,42 +91,39 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Collection<UserDTO> getCourseStudents(Long courseId) {
-        return userMapper.toUserDTOs(courseRepository.findById(courseId)
+        return userMapper.toUserDTOsFS(courseRepository.findById(courseId)
                 .map(Course::getStudents).orElse(List.of()));
     }
 
     @Override
-    @Transactional
     public CourseDTO createCourse(CreateCourseDTO createCourseDTO) {
         if (CollectionUtils.isEmpty(createCourseDTO.getInstructorIds())) {
-            throw new IlligalUserInputException("Each course should have at least one instructor assigned to it");
+            throw new IllegalUserInputException("Each course should have at least one instructor assigned to it");
         }
         if (createCourseDTO.getLessonsTiles().size() < 5) {
-            throw new IlligalUserInputException("Course should have at least five lessons");
+            throw new IllegalUserInputException("Course should have at least five lessons");
         }
 
-        Collection<User> instructors = userService.findAllByIdsAndRole(createCourseDTO.getInstructorIds(), Roles.ROLE_INSTRUCTOR);
+        Course course = new Course(createCourseDTO.getTitle());
+        userService.getAllInstructors(createCourseDTO.getInstructorIds()).forEach(course::addInstructor);
+        createCourseDTO.getLessonsTiles().stream().map(Lesson::new).forEach(course::addLesson);
 
-        Course course = courseRepository.save(new Course(createCourseDTO.getTitle(), instructors));
-        lessonService.saveAll(createCourseDTO.getLessonsTiles().stream().map(Lesson::new).peek(course::addLesson).collect(Collectors.toList()));
-
-        return courseMapper.toCourseDto(course);
+        return courseMapper.toCourseDto(courseRepository.save(course));
     }
 
     @Override
-    @Transactional
     public void assignInstructorToCourse(Long userId, Long courseId) {
-        User instructor = userService.findByIdAndRole(userId, Roles.ROLE_INSTRUCTOR);
+        Instructor instructor = userService.getInstructorById(userId);
 
         Course course = getCourseById(courseId);
-        course.getInstructors().add(instructor);
+        course.addInstructor(instructor);
         courseRepository.save(course);
     }
 
     @Override
     public CourseStatusDTO getCourseStatus(Long studentId, Long courseId) {
         if (!isUserSubscribedToCourse(courseId, studentId)) {
-            throw new IlligalUserInputException("Student should be subscribed to given course");
+            throw new IllegalUserInputException("Student should be subscribed to given course");
         }
 
         return new CourseStatusDTO(calculateCourseStatus(studentId, courseId));

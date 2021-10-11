@@ -1,6 +1,7 @@
 package com.shmigel.promotionproject.model.mapper;
 
 import com.shmigel.promotionproject.model.Roles;
+import com.shmigel.promotionproject.model.Student;
 import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.UserDTO;
 import org.mapstruct.Mapper;
@@ -23,6 +24,8 @@ public interface UserMapper {
     UserDTO toUserDTO(User user);
 
     Collection<UserDTO> toUserDTOs(Collection<User> users);
+
+    Collection<UserDTO> toUserDTOsFS(Collection<Student> students);
 
     @Named("mapToRoleName")
     default String mapToRoleName(Roles role) {

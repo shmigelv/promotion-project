@@ -1,6 +1,8 @@
 package com.shmigel.promotionproject.service;
 
+import com.shmigel.promotionproject.model.Instructor;
 import com.shmigel.promotionproject.model.Roles;
+import com.shmigel.promotionproject.model.Student;
 import com.shmigel.promotionproject.model.User;
 
 import java.util.Collection;
@@ -13,11 +15,11 @@ public interface UserService {
 
     User getUserByUsername(String username);
 
-    User findByIdAndRole(Long userId, Roles role);
+    Collection<Instructor> getAllInstructors(Collection<Long> instructorIds);
 
-    Collection<User> findAllByIdsAndRole(Collection<Long> userIds, Roles role);
+    Instructor getInstructorById(Long instructorId);
 
-    User saveUser(String username, String password);
+    Student getStudentById(Long studentId);
 
     void setUserRole(Long userId, String role);
 

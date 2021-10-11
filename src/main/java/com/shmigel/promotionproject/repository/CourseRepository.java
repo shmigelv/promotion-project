@@ -1,10 +1,7 @@
 package com.shmigel.promotionproject.repository;
 
 import com.shmigel.promotionproject.model.Course;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;

@@ -4,13 +4,11 @@ import com.shmigel.promotionproject.model.Course;
 import com.shmigel.promotionproject.model.Lesson;
 import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.CourseDTO;
-import com.shmigel.promotionproject.model.dto.LessonDetailsDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -31,7 +29,7 @@ public interface CourseMapper {
     Collection<CourseDTO> toCourseDTOs(Collection<Course> courses);
 
     @Named("usersToIds")
-    static Collection<Long> usersToIds(Collection<User> users) {
+    static Collection<Long> usersToIds(Collection<? extends User> users) {
         if (Objects.isNull(users)) {
             return Collections.emptyList();
         }

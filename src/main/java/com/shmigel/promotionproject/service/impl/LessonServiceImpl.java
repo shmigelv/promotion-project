@@ -7,10 +7,8 @@ import com.shmigel.promotionproject.repository.LessonRepository;
 import com.shmigel.promotionproject.service.LessonService;
 import com.shmigel.promotionproject.util.CollectionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 
