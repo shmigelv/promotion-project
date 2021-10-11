@@ -21,7 +21,7 @@ public class Homework {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private User student;
+    private Student student;
 
     @ManyToOne
     private Lesson lesson;
@@ -29,7 +29,6 @@ public class Homework {
     private Integer mark;
 
     private String homeworkFileKey;
-
 
     @Override
     public String toString() {

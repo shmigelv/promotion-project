@@ -1,9 +1,9 @@
 package com.shmigel.promotionproject.service.impl;
 
-import com.shmigel.promotionproject.exception.IlligalUserInputException;
+import com.shmigel.promotionproject.exception.IllegalUserInputException;
 import com.shmigel.promotionproject.model.Course;
 import com.shmigel.promotionproject.model.CourseFeedback;
-import com.shmigel.promotionproject.model.Roles;
+import com.shmigel.promotionproject.model.Student;
 import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.CourseFeedbackDTO;
 import com.shmigel.promotionproject.model.mapper.CourseFeedbackMapper;
@@ -11,23 +11,20 @@ import com.shmigel.promotionproject.repository.CourseFeedbackRepository;
 import com.shmigel.promotionproject.service.CourseFeedbackService;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 
 @Service
 public class CourseFeedbackServiceImpl implements CourseFeedbackService {
 
-    private CourseFeedbackRepository courseFeedbackRepository;
+    private final CourseFeedbackRepository courseFeedbackRepository;
 
-    private UserService userService;
+    private final UserService userService;
 
-    private CourseService courseService;
+    private final CourseService courseService;
 
-    private CourseFeedbackMapper courseFeedbackMapper;
+    private final CourseFeedbackMapper courseFeedbackMapper;
 
     public CourseFeedbackServiceImpl(CourseFeedbackRepository courseFeedbackRepository, UserService userService,
                                      CourseService courseService, CourseFeedbackMapper courseFeedbackMapper) {
@@ -38,22 +35,21 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     }
 
     @Override
-    @PreAuthorize("hasRole('INSTRUCTOR')")
     public CourseFeedbackDTO createFeedback(Long studentId, Long courseId, String feedback) {
         if (courseFeedbackRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
-            throw new IlligalUserInputException("Feedback already present for this students course");
+            throw new IllegalUserInputException("Feedback already present for this students course");
         }
 
-        User student = userService.findByIdAndRole(studentId, Roles.ROLE_STUDENT);
+        Student student = userService.getStudentById(studentId);
         Course course = courseService.getCourseById(courseId);
         Collection<Course> instructorCourses = courseService.getUserCourses();
         Collection<Course> studentCourses = courseService.getStudentCourses(studentId);
 
         if (!instructorCourses.contains(course)) {
-            throw new IlligalUserInputException("Current user should be assigned as instructor to requested course");
+            throw new IllegalUserInputException("Current user should be assigned as instructor to requested course");
         }
         if (!studentCourses.contains(course)) {
-            throw new IlligalUserInputException("Student is not subscribed to course");
+            throw new IllegalUserInputException("Student is not subscribed to course");
         }
 
         CourseFeedback courseFeedback = courseFeedbackRepository.save(new CourseFeedback(course, student, feedback));

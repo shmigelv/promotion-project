@@ -1,10 +1,7 @@
 package api;
 
 import com.shmigel.promotionproject.exception.EntityNotFoundException;
-import com.shmigel.promotionproject.model.Course;
-import com.shmigel.promotionproject.model.Lesson;
-import com.shmigel.promotionproject.model.Roles;
-import com.shmigel.promotionproject.model.User;
+import com.shmigel.promotionproject.model.*;
 import com.shmigel.promotionproject.model.dto.CourseDTO;
 import com.shmigel.promotionproject.model.dto.CreateCourseDTO;
 import com.shmigel.promotionproject.repository.CourseRepository;
@@ -61,8 +58,8 @@ public class UserControllerTest {
     @Test
     void adminCanAssignRoleToUser() throws Exception {
         // GIVEN existing admin and user without role
-        User admin = userService.saveUser(new User("admin", "pass1", Roles.ROLE_ADMIN));
-        User user = userService.saveUser("student", "pass1");
+        Admin admin = testUtil.createTestAdmin();
+        User user = userService.saveUser(new User("student", "pass1"));
 
         // WHEN admin setts role to a user without role
         String jwt = testUtil.getAuthToken(admin);
@@ -75,7 +72,7 @@ public class UserControllerTest {
         // THEN role is set for user
         resultActions.andExpect(status().isOk());
 
-        User student = userService.findByIdAndRole(user.getId(), Roles.ROLE_STUDENT);
+        User student = userService.getStudentById(user.getId());
         assertNotNull(student);
         assertNotNull(student.getRole());
     }
@@ -83,13 +80,13 @@ public class UserControllerTest {
     @Test
     void adminCantAssignRoleToUser_whenRoleAlreadySet() throws Exception {
         // GIVEN existing admin and user with role set
-        User admin = userService.saveUser(new User("admin", "pass1", Roles.ROLE_ADMIN));
-        User user = userService.saveUser(new User("student", "pass1", Roles.ROLE_STUDENT));
+        Admin admin = testUtil.createTestAdmin();
+        Student student = testUtil.createTestStudent();
 
         // WHEN admin setts role to a user with role
         String jwt = testUtil.getAuthToken(admin);
 
-        ResultActions resultActions = mockMvc.perform(put("/admin/users/" + user.getId() + "/role")
+        ResultActions resultActions = mockMvc.perform(put("/admin/users/" + student.getId() + "/role")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + jwt)
                 .content(Roles.ROLE_STUDENT.name()));
@@ -97,37 +94,35 @@ public class UserControllerTest {
         // THEN response is error
         resultActions.andExpect(status().is4xxClientError());
 
-        User student = userService.findByIdAndRole(user.getId(), Roles.ROLE_STUDENT);
-        assertNotNull(student);
-        assertNotNull(student.getRole());
+        User savedStudent = userService.getStudentById(student.getId());
+        assertNotNull(savedStudent);
+        assertEquals(Roles.ROLE_STUDENT, savedStudent.getRole());
     }
 
     @Test
     void nonAdminUserCantAssignRoleToUser() throws Exception {
-        // GIVEN existing admin and user with role set
-        User admin = userService.saveUser(new User("admin", "pass1", Roles.ROLE_INSTRUCTOR));
+        // GIVEN instructor and user with role set
+        Instructor instructor = testUtil.createTestInstructor();
         User user = userService.saveUser(new User("student", "pass1"));
 
         // WHEN admin setts role to a user with role
-        String jwt = testUtil.getAuthToken(admin);
-
         ResultActions resultActions = mockMvc.perform(put("/users/" + user.getId() + "/role")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + jwt)
+                .header("Authorization", "Bearer " + testUtil.getAuthToken(instructor))
                 .content(Roles.ROLE_STUDENT.name()));
 
         // THEN response is error
         resultActions.andExpect(status().isForbidden());
 
-        assertThrows(EntityNotFoundException.class, () -> userService.findByIdAndRole(user.getId(), Roles.ROLE_STUDENT));
+        assertThrows(EntityNotFoundException.class, () -> userService.getStudentById(user.getId()));
     }
 
     @Test
     void adminCanCreateCourse() throws Exception {
         // GIVEN user with admin rights
-        User admin = userService.saveUser(new User("amin", "pass", Roles.ROLE_ADMIN));
+        User admin = testUtil.createTestAdmin();
 
-        User instructor = userService.saveUser(new User("instructor", "pass", Roles.ROLE_INSTRUCTOR));
+        User instructor = testUtil.createTestInstructor();
         List<String> lessonTitles = IntStream.rangeClosed(1, 5).mapToObj(i -> "lesson_name_" + i).collect(Collectors.toList());
         CreateCourseDTO createCourse = new CreateCourseDTO("course_title", List.of(instructor.getId()), lessonTitles);
 

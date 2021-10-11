@@ -1,7 +1,6 @@
 package com.shmigel.promotionproject;
 
 import com.shmigel.promotionproject.repository.UserRepository;
-import com.shmigel.promotionproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

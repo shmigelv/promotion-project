@@ -1,6 +1,9 @@
 package com.shmigel.promotionproject.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,27 +24,22 @@ public class Course {
 
     private String title;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "instructor_courses",
             joinColumns = @JoinColumn(name = "course_id"),
             inverseJoinColumns = @JoinColumn(name = "instructor_id")
     )
-    private Collection<User> instructors = new ArrayList<>();
+    private Collection<Instructor> instructors = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(
-            name = "student_courses",
-            joinColumns = @JoinColumn(name = "course_id"),
-            inverseJoinColumns = @JoinColumn(name = "student_id")
-    )
-    private Collection<User> students = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.PERSIST, mappedBy = "courses")
+    private Collection<Student> students = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "course_id")
     private Collection<Lesson> lessons = new ArrayList<>();
 
-    public Course(String title, Collection<User> instructors) {
+    public Course(String title, Collection<Instructor> instructors) {
         this.title = title;
         this.instructors = instructors;
     }
@@ -53,6 +51,16 @@ public class Course {
     public void addLesson(Lesson lesson) {
         this.getLessons().add(lesson);
         lesson.setCourse(this);
+    }
+
+    public void addStudent(Student student) {
+        this.getStudents().add(student);
+        student.getCourses().add(this);
+    }
+
+    public void addInstructor(Instructor instructor) {
+        this.getInstructors().add(instructor);
+        instructor.getCourses().add(this);
     }
 
     @Override

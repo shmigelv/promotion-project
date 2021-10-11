@@ -5,7 +5,6 @@ import com.shmigel.promotionproject.model.dto.HomeworkDTO;
 import com.shmigel.promotionproject.model.dto.MarkDTO;
 import com.shmigel.promotionproject.model.mapper.HomeworkMapper;
 import com.shmigel.promotionproject.service.HomeworkService;
-import com.shmigel.promotionproject.service.LessonService;
 import com.shmigel.promotionproject.service.impl.AuthenticationProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,30 +15,28 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/lessons")
 public class LessonController {
 
-    private LessonService lessonService;
+    private final HomeworkService homeworkService;
 
-    private HomeworkService homeworkService;
+    private final HomeworkMapper homeworkMapper;
 
-    private HomeworkMapper homeworkMapper;
+    private final AuthenticationProvider authenticationProvider;
 
-    private AuthenticationProvider authenticationProvider;
-
-    public LessonController(LessonService lessonService, HomeworkService homeworkService, HomeworkMapper homeworkMapper,
+    public LessonController(HomeworkService homeworkService, HomeworkMapper homeworkMapper,
                             AuthenticationProvider authenticationProvider) {
-        this.lessonService = lessonService;
         this.homeworkService = homeworkService;
         this.homeworkMapper = homeworkMapper;
         this.authenticationProvider = authenticationProvider;
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/{lessonId}/homeworks")
-    @PreAuthorize("hasRole('ROLE_STUDENT')")
     public ResponseEntity<HomeworkDTO> uploadHomework(@PathVariable Long lessonId, @RequestParam("file") final MultipartFile file) {
         Long studentId = authenticationProvider.getAuthentication().getUserId();
         Homework homework = homeworkService.uploadHomework(studentId, lessonId, file);
         return ResponseEntity.ok(homeworkMapper.toHomeworkDTO(homework));
     }
 
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @PostMapping("/{lessonId}/students/{studentId}/marks")
     public ResponseEntity<Void> putMarkForStudentLesson(@PathVariable Long lessonId, @PathVariable Long studentId,
                                                         @RequestBody MarkDTO mark) {

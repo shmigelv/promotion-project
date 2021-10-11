@@ -10,9 +10,6 @@ spring:
     show-sql: true
 #    open-in-view: false
 
-document:
-  bucket-name: promotion-project
-
 server:
   servlet:
     context-path: /api
@@ -23,6 +20,8 @@ logging.level:
   org.hibernate.type.descriptor.sql: trace
 
 aws:
+  access-key: AKIAVEA3ZIKRJWT6DZMC
+  secret: 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
   homeworks-path: promotion-project/homeworks
 
 jwt:

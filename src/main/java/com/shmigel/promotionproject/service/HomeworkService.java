@@ -1,7 +1,7 @@
 package com.shmigel.promotionproject.service;
 
-import com.shmigel.promotionproject.model.dto.MarkDTO;
 import com.shmigel.promotionproject.model.Homework;
+import com.shmigel.promotionproject.model.dto.MarkDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
