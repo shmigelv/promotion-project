@@ -140,7 +140,7 @@ public class SecurityControllerTest {
         JwtDTO jwt = securityService.login(new UserCredentialDTO(user.getUsername(), "pass"));
 
         //WHEN user tries to get his information
-        ResultActions resultActions = mockMvc.perform(get("/security/me")
+        ResultActions resultActions = mockMvc.perform(get("/users/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + jwt.getToken()));
 

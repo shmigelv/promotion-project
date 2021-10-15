@@ -41,15 +41,21 @@ public class TestUtil {
     }
 
     public Student createTestStudent() {
-        return studentRepository.save(new Student("student", encode(DEFAULT_PASSWORD)));
+        Student student = studentRepository.save(new Student("student", encode(DEFAULT_PASSWORD)));
+        userRepository.updateUserRole(student.getId(), Roles.ROLE_STUDENT.name());
+        return student;
     }
 
     public Instructor createTestInstructor() {
-        return instructorRepository.save(new Instructor("instructor", encode(DEFAULT_PASSWORD)));
+        Instructor instructor = instructorRepository.save(new Instructor("instructor", encode(DEFAULT_PASSWORD)));
+        userRepository.updateUserRole(instructor.getId(), Roles.ROLE_INSTRUCTOR.name());
+        return instructor;
     }
 
     public Admin createTestAdmin() {
-        return adminRepository.save(new Admin("admin", encode(DEFAULT_PASSWORD)));
+        Admin admin = adminRepository.save(new Admin("admin", encode(DEFAULT_PASSWORD)));
+        userRepository.updateUserRole(admin.getId(), Roles.ROLE_ADMIN.name());
+        return admin;
     }
 
     private String encode(String input) {
