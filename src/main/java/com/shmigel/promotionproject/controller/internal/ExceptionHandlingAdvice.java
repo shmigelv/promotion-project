@@ -1,4 +1,4 @@
-package com.shmigel.promotionproject.controller.filter;
+package com.shmigel.promotionproject.controller.internal;
 
 import com.shmigel.promotionproject.exception.GenericRestException;
 import com.shmigel.promotionproject.model.dto.ErrorDTO;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Log4j2
 @ControllerAdvice
-public class ExceptionHandlerAdvice {
+public class ExceptionHandlingAdvice {
 
     @ExceptionHandler(value = GenericRestException.class)
     public ResponseEntity<ErrorDTO> handleGenericException(GenericRestException genericException) {

@@ -5,10 +5,7 @@ import com.shmigel.promotionproject.model.dto.UserCredentialDTO;
 import com.shmigel.promotionproject.model.dto.UserDTO;
 import com.shmigel.promotionproject.service.SecurityService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/security")
@@ -30,8 +27,4 @@ public class SecurityController {
         return ResponseEntity.ok(securityService.register(loginRequest));
     }
 
-    @PostMapping("/me")
-    public ResponseEntity<UserDTO> currentUser() {
-        return ResponseEntity.ok(securityService.getAuthenticatedUser());
-    }
 }

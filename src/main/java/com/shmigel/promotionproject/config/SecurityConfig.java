@@ -1,7 +1,6 @@
 package com.shmigel.promotionproject.config;
 
-import com.shmigel.promotionproject.controller.filter.AuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.shmigel.promotionproject.controller.internal.AuthenticationFilter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,7 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @EnableGlobalMethodSecurity(
         prePostEnabled = true,
         securedEnabled = true,
@@ -30,8 +29,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
 
                 .authorizeRequests()
-                .antMatchers("/security/**").permitAll()
-                .anyRequest().authenticated()
+//                .antMatchers("/security/**").permitAll()
+//                .anyRequest().authenticated()
+                .anyRequest().permitAll()
 
                 .and()
                 .sessionManagement()

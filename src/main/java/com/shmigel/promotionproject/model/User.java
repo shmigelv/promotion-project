@@ -2,6 +2,7 @@ package com.shmigel.promotionproject.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DiscriminatorOptions;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -11,7 +12,9 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="role")
+@DiscriminatorColumn(name = "role")
+@DiscriminatorValue("null")
+@DiscriminatorOptions(insert = false)
 public class User {
 
     @Id
@@ -23,7 +26,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(insertable = false, updatable = false)
+    @Column(insertable = false, nullable = false)
     private Roles role;
 
     public User(String username, String password) {

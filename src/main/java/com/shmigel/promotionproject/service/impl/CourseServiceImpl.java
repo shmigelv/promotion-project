@@ -14,6 +14,7 @@ import com.shmigel.promotionproject.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.List;
 
@@ -79,8 +80,10 @@ public class CourseServiceImpl implements CourseService {
 
         if (user.getRole().equals(Roles.ROLE_INSTRUCTOR)) {
             return courseRepository.findAllByInstructorsId(user.getId());
-        } else {
+        } else if (user.getRole().equals(Roles.ROLE_STUDENT)){
             return courseRepository.findAllByStudentsId(user.getId());
+        } else {
+            return List.of();
         }
     }
 
@@ -108,7 +111,8 @@ public class CourseServiceImpl implements CourseService {
         userService.getAllInstructors(createCourseDTO.getInstructorIds()).forEach(course::addInstructor);
         createCourseDTO.getLessonsTiles().stream().map(Lesson::new).forEach(course::addLesson);
 
-        return courseMapper.toCourseDto(courseRepository.save(course));
+        Course save = courseRepository.save(course);
+        return courseMapper.toCourseDto(save);
     }
 
     @Override

@@ -71,10 +71,6 @@ public class UserControllerTest {
 
         // THEN role is set for user
         resultActions.andExpect(status().isOk());
-
-        User student = userService.getUserByUsername(user.getUsername());
-        assertNotNull(student);
-        assertEquals(Roles.ROLE_STUDENT, student.getRole());
     }
 
     @Test
@@ -103,7 +99,7 @@ public class UserControllerTest {
     void nonAdminUserCantAssignRoleToUser() throws Exception {
         // GIVEN instructor and user with role set
         Instructor instructor = testUtil.createTestInstructor();
-        User user = userService.saveUser(new User("student", "pass1"));
+        User user = userService.saveUser(new User("student", "pass"));
 
         // WHEN admin setts role to a user with role
         ResultActions resultActions = mockMvc.perform(put("/users/" + user.getId() + "/role")

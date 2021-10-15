@@ -1,5 +1,7 @@
 package com.shmigel.promotionproject.model;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,7 +9,9 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
+@Data
 @Getter
 @Setter
 @DiscriminatorValue("ROLE_STUDENT")

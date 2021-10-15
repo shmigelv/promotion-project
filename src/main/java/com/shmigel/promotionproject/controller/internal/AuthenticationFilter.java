@@ -1,4 +1,4 @@
-package com.shmigel.promotionproject.controller.filter;
+package com.shmigel.promotionproject.controller.internal;
 
 import com.shmigel.promotionproject.service.SecurityService;
 import lombok.extern.log4j.Log4j2;

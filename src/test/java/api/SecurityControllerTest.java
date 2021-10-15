@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -139,7 +140,7 @@ public class SecurityControllerTest {
         JwtDTO jwt = securityService.login(new UserCredentialDTO(user.getUsername(), "pass"));
 
         //WHEN user tries to get his information
-        ResultActions resultActions = mockMvc.perform(post("/security/me")
+        ResultActions resultActions = mockMvc.perform(get("/security/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + jwt.getToken()));
 

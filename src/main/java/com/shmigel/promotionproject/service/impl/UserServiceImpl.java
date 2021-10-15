@@ -10,12 +10,13 @@ import com.shmigel.promotionproject.repository.InstructorRepository;
 import com.shmigel.promotionproject.repository.StudentRepository;
 import com.shmigel.promotionproject.repository.UserRepository;
 import com.shmigel.promotionproject.service.UserService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
+
+import static java.util.Objects.isNull;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -26,14 +27,11 @@ public class UserServiceImpl implements UserService {
 
     private final StudentRepository studentRepository;
 
-    private final PasswordEncoder passwordEncoder;
-
     public UserServiceImpl(UserRepository userRepository, InstructorRepository instructorRepository,
-                           StudentRepository studentRepository, PasswordEncoder passwordEncoder) {
+                           StudentRepository studentRepository) {
         this.userRepository = userRepository;
         this.instructorRepository = instructorRepository;
         this.studentRepository = studentRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -72,18 +70,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void setUserRole(Long userId, String roleName) {
-        Optional<User> user = userRepository.findById(userId);
+        User user = getUserById(userId);
 
-        if (user.isEmpty()) {
-            throw new EntityNotFoundException("User with id: " + userId + " is not found");
+        if (Objects.nonNull(user.getRole())) {
+            throw new IllegalUserInputException("User with id: " + userId + " already has role assigned");
         }
 
-        if (Objects.nonNull(user.get().getRole())) {
-            throw new EntityNotFoundException("User with id: " + userId + " already has role assigned");
+        if (isNull(Roles.fromValue(roleName))) {
+            throw new IllegalUserInputException("Role with name " + roleName + " doesn't exist, available values " + Arrays.toString(Roles.values()));
         }
 
-        user.get().setRole(Roles.fromValue(roleName));
-        userRepository.save(user.get());
+        if (isNull(Roles.fromValue(roleName))) {
+            throw new IllegalUserInputException("Provided role: " + roleName + " is not valid, valid values: " + Arrays.toString(Roles.values()));
+        }
+        userRepository.updateUserRole(user.getId(), roleName);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.shmigel.promotionproject.service.impl;
 import com.shmigel.promotionproject.config.properties.JwtProperties;
 import com.shmigel.promotionproject.exception.EntityNotFoundException;
 import com.shmigel.promotionproject.exception.IllegalUserInputException;
+import com.shmigel.promotionproject.model.Roles;
 import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.JwtDTO;
 import com.shmigel.promotionproject.model.dto.UserCredentialDTO;
@@ -11,6 +12,7 @@ import com.shmigel.promotionproject.model.mapper.UserMapper;
 import com.shmigel.promotionproject.service.SecurityService;
 import com.shmigel.promotionproject.service.UserService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -18,7 +20,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,15 +45,18 @@ public class SecurityServiceImpl implements SecurityService {
 
     private final UserMapper userMapper;
 
+    private final JwtParser jwtParser;
+
     private static final String ROLE_CLAIM = "role";
 
     public SecurityServiceImpl(UserService userService, JwtProperties jwtProperties, PasswordEncoder passwordEncoder,
-                               AuthenticationProvider authenticationProvider, UserMapper userMapper) {
+                               AuthenticationProvider authenticationProvider, UserMapper userMapper, JwtParser jwtParser) {
         this.userService = userService;
         this.jwtProperties = jwtProperties;
         this.passwordEncoder = passwordEncoder;
         this.authenticationProvider = authenticationProvider;
         this.userMapper = userMapper;
+        this.jwtParser = jwtParser;
     }
 
     @Override
@@ -100,19 +104,18 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtProperties.getKey()).build()
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = jwtParser.parseClaimsJws(token).getBody();
+
+        String issuer = claims.getIssuer();
+
+        if (!jwtProperties.getIssuer().equals(issuer)) {
+            throw new IllegalUserInputException("Token contains wrong issuer");
+        }
 
         String principal = claims.getSubject();
         List<SimpleGrantedAuthority> authorities = getRoles(claims);
 
-        if (authorities.isEmpty()) {
-            return new UsernamePasswordAuthenticationToken(principal, "");
-        } else {
-            return new UsernamePasswordAuthenticationToken(principal, "", authorities);
-        }
+        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
     private List<SimpleGrantedAuthority> getRoles(Claims claims) {
