@@ -31,7 +31,7 @@ public class LessonController {
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/{lessonId}/homeworks")
     public ResponseEntity<HomeworkDTO> uploadHomework(@PathVariable Long lessonId, @RequestParam("file") final MultipartFile file) {
-        Long studentId = authenticationProvider.getAuthentication().getUserId();
+        Long studentId = authenticationProvider.getAuthenticatedUserId();
         Homework homework = homeworkService.uploadHomework(studentId, lessonId, file);
         return ResponseEntity.ok(homeworkMapper.toHomeworkDTO(homework));
     }

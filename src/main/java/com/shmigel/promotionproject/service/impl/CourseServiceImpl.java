@@ -115,8 +115,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void assignInstructorToCourse(Long userId, Long courseId) {
-        Instructor instructor = userService.getInstructorById(userId);
+    public void assignInstructorToCourse(Long instructorId, Long courseId) {
+        Instructor instructor = userService.getInstructorById(instructorId);
 
         Course course = getCourseById(courseId);
         course.addInstructor(instructor);
