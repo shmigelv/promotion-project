@@ -120,10 +120,11 @@ public class LessonControllerTest {
         Instructor instructor = testUtil.createTestInstructor();
         Student student = testUtil.createTestStudent();
 
-        Course course = new Course("course", List.of(instructor));
+        Course course = new Course("course");
         Lesson lesson = new Lesson("lesson");
 
         course.addStudent(student);
+        course.addInstructor(instructor);
         course.addLesson(lesson);
         courseRepository.save(course);
 
@@ -152,12 +153,13 @@ public class LessonControllerTest {
         Instructor instructor = testUtil.createTestInstructor();
         Student student = testUtil.createTestStudent();
 
-        Course course = new Course("course", List.of(instructor));
+        Course course = new Course("course");
         Lesson lesson = new Lesson("lesson");
 
         new Homework();
 
         course.addStudent(student);
+        course.addInstructor(instructor);
         course.addLesson(lesson);
         courseRepository.save(course);
 

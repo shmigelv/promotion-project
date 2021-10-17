@@ -36,7 +36,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
 
     @Override
     public CourseFeedbackDTO createFeedback(Long studentId, Long courseId, String feedback) {
-        if (!courseFeedbackRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
+        if (courseFeedbackRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
             throw new IllegalUserInputException("Feedback already present for this students course");
         }
 

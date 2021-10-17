@@ -27,7 +27,7 @@ class CourseFeedbackServiceImplTest {
         var sut = mock(CourseFeedbackServiceImpl.class, withConstructor(courseFeedbackRepository, null, null, null));
         doCallRealMethod().when(sut).createFeedback(anyLong(), anyLong(), anyString());
 
-        when(courseFeedbackRepository.existsByStudentIdAndCourseId(anyLong(), anyLong())).thenReturn(false);
+        when(courseFeedbackRepository.existsByStudentIdAndCourseId(anyLong(), anyLong())).thenReturn(true);
 
         //THEN
         var actualException = assertThrows(IllegalUserInputException.class, () -> sut.createFeedback(1L, 1L, "feedback"));
@@ -43,7 +43,7 @@ class CourseFeedbackServiceImplTest {
         var sut = mock(CourseFeedbackServiceImpl.class, withConstructor(courseFeedbackRepository, userService, courseService, mock(CourseFeedbackMapper.class)));
         doCallRealMethod().when(sut).createFeedback(anyLong(), anyLong(), anyString());
 
-        when(courseFeedbackRepository.existsByStudentIdAndCourseId(anyLong(), anyLong())).thenReturn(true);
+        when(courseFeedbackRepository.existsByStudentIdAndCourseId(anyLong(), anyLong())).thenReturn(false);
 
         var student = mock(Student.class);
         when(userService.getStudentById(anyLong())).thenReturn(student);
@@ -73,7 +73,7 @@ class CourseFeedbackServiceImplTest {
         var sut = mock(CourseFeedbackServiceImpl.class, withConstructor(courseFeedbackRepository, userService, courseService, courseFeedbackMapper));
         doCallRealMethod().when(sut).createFeedback(anyLong(), anyLong(), anyString());
 
-        when(courseFeedbackRepository.existsByStudentIdAndCourseId(anyLong(), anyLong())).thenReturn(true);
+        when(courseFeedbackRepository.existsByStudentIdAndCourseId(anyLong(), anyLong())).thenReturn(false);
 
         var courseFeedback = mock(CourseFeedback.class);
         when(courseFeedbackRepository.save(any())).thenReturn(courseFeedback);
