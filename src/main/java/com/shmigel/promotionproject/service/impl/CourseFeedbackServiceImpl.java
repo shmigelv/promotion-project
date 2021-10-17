@@ -36,14 +36,21 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
 
     @Override
     public CourseFeedbackDTO createFeedback(Long studentId, Long courseId, String feedback) {
-        if (courseFeedbackRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
+        if (!courseFeedbackRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
             throw new IllegalUserInputException("Feedback already present for this students course");
         }
 
         Student student = userService.getStudentById(studentId);
         Course course = courseService.getCourseById(courseId);
+        validateStudentAndInstructorSubscribedToCourse(student, course);
+
+        CourseFeedback courseFeedback = courseFeedbackRepository.save(new CourseFeedback(course, student, feedback));
+        return courseFeedbackMapper.toCourseFeedbackDto(courseFeedback);
+    }
+
+    protected void validateStudentAndInstructorSubscribedToCourse(Student student, Course course) {
         Collection<Course> instructorCourses = courseService.getUserCourses();
-        Collection<Course> studentCourses = courseService.getStudentCourses(studentId);
+        Collection<Course> studentCourses = student.getCourses();
 
         if (!instructorCourses.contains(course)) {
             throw new IllegalUserInputException("Current user should be assigned as instructor to requested course");
@@ -51,8 +58,5 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
         if (!studentCourses.contains(course)) {
             throw new IllegalUserInputException("Student is not subscribed to course");
         }
-
-        CourseFeedback courseFeedback = courseFeedbackRepository.save(new CourseFeedback(course, student, feedback));
-        return courseFeedbackMapper.toCourseFeedbackDto(courseFeedback);
     }
 }

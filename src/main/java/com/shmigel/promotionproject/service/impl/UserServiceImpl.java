@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -65,7 +67,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<Instructor> getAllInstructors(Collection<Long> instructorIds) {
-        return instructorRepository.findAllById(instructorIds);
+        Collection<Instructor> instructors = instructorRepository.findAllById(instructorIds);
+
+        if (instructorIds.size() != instructors.size()) {
+            throw new EntityNotFoundException("Some of the provided instructors are mot found");
+        } else {
+            return instructors;
+        }
     }
 
     @Override
@@ -80,9 +88,6 @@ public class UserServiceImpl implements UserService {
             throw new IllegalUserInputException("Role with name " + roleName + " doesn't exist, available values " + Arrays.toString(Roles.values()));
         }
 
-        if (isNull(Roles.fromValue(roleName))) {
-            throw new IllegalUserInputException("Provided role: " + roleName + " is not valid, valid values: " + Arrays.toString(Roles.values()));
-        }
         userRepository.updateUserRole(user.getId(), roleName);
     }
 

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
 import java.util.List;
 
 @Builder
@@ -15,8 +16,8 @@ public class CreateCourseDTO {
 
     private String title;
 
-    private List<Long> instructorIds;
+    private Collection<Long> instructorIds;
 
-    private List<String> lessonsTiles;
+    private Collection<String> lessonsTiles;
 
 }

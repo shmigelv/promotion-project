@@ -14,9 +14,9 @@ import com.shmigel.promotionproject.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -55,7 +55,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void addStudentToCourse(Long courseId) {
-        Long studentId = authenticationProvider.getAuthentication().getUserId();
+        Long studentId = authenticationProvider.getAuthenticatedUserId();
 
         Course targetCourse = getCourseById(courseId);
         Student student = userService.getStudentById(studentId);
@@ -75,8 +75,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Collection<Course> getUserCourses() {
-        AuthenticationDTO authentication = authenticationProvider.getAuthentication();
-        User user = userService.getUserById(authentication.getUserId());
+        Long currentUserId = authenticationProvider.getAuthenticatedUserId();
+        User user = userService.getUserById(currentUserId);
 
         if (user.getRole().equals(Roles.ROLE_INSTRUCTOR)) {
             return courseRepository.findAllByInstructorsId(user.getId());
@@ -94,7 +94,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Collection<UserDTO> getCourseStudents(Long courseId) {
-        return userMapper.toUserDTOsFS(courseRepository.findById(courseId)
+        return userMapper.toUserDTOsFromStudent(courseRepository.findById(courseId)
                 .map(Course::getStudents).orElse(List.of()));
     }
 
@@ -111,8 +111,7 @@ public class CourseServiceImpl implements CourseService {
         userService.getAllInstructors(createCourseDTO.getInstructorIds()).forEach(course::addInstructor);
         createCourseDTO.getLessonsTiles().stream().map(Lesson::new).forEach(course::addLesson);
 
-        Course save = courseRepository.save(course);
-        return courseMapper.toCourseDto(save);
+        return courseMapper.toCourseDto(courseRepository.save(course));
     }
 
     @Override
@@ -129,15 +128,15 @@ public class CourseServiceImpl implements CourseService {
         if (!isUserSubscribedToCourse(courseId, studentId)) {
             throw new IllegalUserInputException("Student should be subscribed to given course");
         }
-
         return new CourseStatusDTO(calculateCourseStatus(studentId, courseId));
     }
 
-    private CourseStatus calculateCourseStatus(Long studentId, Long courseId) {
+    protected CourseStatus calculateCourseStatus(Long studentId, Long courseId) {
         Collection<Homework> userCourseHomeworks = homeworkService.getAllHomeworksByCourseIdAndStudentId(courseId, studentId);
         Long lessonsInCourse = lessonService.getNumberOfLessonsByCourse(courseId);
 
-        if (userCourseHomeworks.size() != lessonsInCourse) {
+        long numberOfMarks = userCourseHomeworks.stream().map(Homework::getMark).filter(Objects::nonNull).count();
+        if (numberOfMarks != lessonsInCourse) {
             return CourseStatus.IN_PROGRESS;
         } else {
             int sumOfMarks = userCourseHomeworks.stream().mapToInt(Homework::getMark).sum();

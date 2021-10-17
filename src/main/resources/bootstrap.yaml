@@ -1,0 +1,3 @@
+aws:
+  secretsmanager:
+    region: us-east-2

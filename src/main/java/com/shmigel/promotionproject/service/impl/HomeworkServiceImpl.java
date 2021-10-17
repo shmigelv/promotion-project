@@ -62,7 +62,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         Lesson lesson = lessonService.getLessonById(lessonId);
 
         if (!student.getCourses().contains(lesson.getCourse())) {
-            throw new IllegalUserInputException("Student should be subscribed to lessons' course");
+            throw new IllegalUserInputException("Student should be subscribed to lesson course");
         }
 
         Optional<Homework> homework = homeworkRepository.findByStudentIdAndLessonId(studentId, lessonId);
@@ -78,8 +78,8 @@ public class HomeworkServiceImpl implements HomeworkService {
         }
     }
 
-    private String saveHomeworkFile(Lesson lesson, User student, MultipartFile file) {
-        final String key = student.getId() + "|" + lesson.getId() + "|" + UUID.randomUUID();
+    protected String saveHomeworkFile(Lesson lesson, Student student, MultipartFile file) {
+        final String key = student.getId() + "|" + lesson.getId();
         s3Client.putObject(bucketName, key, IOUtil.getInputStream(file), new ObjectMetadata());
         return key;
     }
@@ -91,7 +91,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         Instructor currentUser = userService.getInstructorById(authentication.getUserId());
         Student student = userService.getStudentById(studentId);
 
-        if (!lesson.getCourse().getInstructors().contains(currentUser)) {
+        if (!currentUser.getCourses().contains(lesson.getCourse())) {
             throw new IllegalUserInputException("Instructor can only put marks for his courses");
         }
 

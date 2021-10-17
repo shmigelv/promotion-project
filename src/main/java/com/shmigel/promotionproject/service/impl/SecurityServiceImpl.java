@@ -3,7 +3,6 @@ package com.shmigel.promotionproject.service.impl;
 import com.shmigel.promotionproject.config.properties.JwtProperties;
 import com.shmigel.promotionproject.exception.EntityNotFoundException;
 import com.shmigel.promotionproject.exception.IllegalUserInputException;
-import com.shmigel.promotionproject.model.Roles;
 import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.JwtDTO;
 import com.shmigel.promotionproject.model.dto.UserCredentialDTO;
@@ -19,10 +18,10 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
 import java.util.Arrays;
@@ -60,7 +59,6 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    @Transactional
     public JwtDTO login(UserCredentialDTO loginRequest) {
         User user = userService.getUserByUsername(loginRequest.getUsername());
 
@@ -71,7 +69,7 @@ public class SecurityServiceImpl implements SecurityService {
         return generateJwt(user);
     }
 
-    private JwtDTO generateJwt(User user) {
+    protected JwtDTO generateJwt(User user) {
         SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getKey()));
 
         Date tokenExpirationDate = getDefaultTokenExpirationDate();
@@ -113,12 +111,12 @@ public class SecurityServiceImpl implements SecurityService {
         }
 
         String principal = claims.getSubject();
-        List<SimpleGrantedAuthority> authorities = getRoles(claims);
+        List<GrantedAuthority> authorities = getRoles(claims);
 
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
-    private List<SimpleGrantedAuthority> getRoles(Claims claims) {
+    protected List<GrantedAuthority> getRoles(Claims claims) {
         if (isNull(claims.get(ROLE_CLAIM))) {
             return List.of();
         }
@@ -128,7 +126,7 @@ public class SecurityServiceImpl implements SecurityService {
                 .collect(Collectors.toList());
     }
 
-    private Date getDefaultTokenExpirationDate() {
+    protected Date getDefaultTokenExpirationDate() {
         long currentTimeMillis = System.currentTimeMillis() + 1_800_000_0;
         return new Date(currentTimeMillis);
     }

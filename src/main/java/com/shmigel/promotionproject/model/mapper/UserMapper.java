@@ -25,7 +25,7 @@ public interface UserMapper {
 
     Collection<UserDTO> toUserDTOs(Collection<User> users);
 
-    Collection<UserDTO> toUserDTOsFS(Collection<Student> students);
+    Collection<UserDTO> toUserDTOsFromStudent(Collection<Student> students);
 
     @Named("mapToRoleName")
     default String mapToRoleName(Roles role) {
