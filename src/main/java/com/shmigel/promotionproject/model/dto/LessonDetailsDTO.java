@@ -4,20 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Collection;
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CourseDTO {
+public class LessonDetailsDTO {
 
     private Long id;
 
     private String title;
 
-    private Collection<Long> instructorIds;
+    private boolean homeworkUploaded;
 
-    private Collection<Long> studentIds;
+    private MarkDTO mark;
 
 }

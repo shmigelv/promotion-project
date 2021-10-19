@@ -1,23 +1,37 @@
 package com.shmigel.promotionproject.service.impl;
 
 import com.shmigel.promotionproject.config.properties.JwtProperties;
+import com.shmigel.promotionproject.model.dto.JwtDTO;
 import com.shmigel.promotionproject.model.dto.UserCredentialDTO;
 import com.shmigel.promotionproject.model.User;
+import com.shmigel.promotionproject.model.dto.UserDTO;
+import com.shmigel.promotionproject.model.mapper.UserMapper;
 import com.shmigel.promotionproject.service.SecurityService;
 import com.shmigel.promotionproject.service.UserService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.crypto.SecretKey;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
 
 @Service
 public class SecurityServiceImpl implements SecurityService {
@@ -26,39 +40,63 @@ public class SecurityServiceImpl implements SecurityService {
 
     private JwtProperties jwtProperties;
 
-    private AuthenticationProvider authenticationProvider;
+    private PasswordEncoder passwordEncoder;
+
+    private UserMapper userMapper;
 
     private static final String ROLE_CLAIM = "role";
 
-    public SecurityServiceImpl(UserService userService, JwtProperties jwtProperties, AuthenticationProvider authenticationProvider) {
+    public SecurityServiceImpl(UserService userService, JwtProperties jwtProperties,
+                               PasswordEncoder passwordEncoder, UserMapper userMapper) {
         this.userService = userService;
         this.jwtProperties = jwtProperties;
-        this.authenticationProvider = authenticationProvider;
+        this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
     @Override
     @Transactional
-    public String login(UserCredentialDTO loginRequest) {
+    public JwtDTO login(UserCredentialDTO loginRequest) {
         User user = userService.getUserByUsername(loginRequest.getUsername());
 
-        return Jwts.builder()
+        if (isNull(user) || user.getPassword().equals(passwordEncoder.encode(loginRequest.getPassword()))) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't login");
+        }
+
+        return generateJwtDTO(user);
+    }
+
+    private JwtDTO generateJwtDTO(User user) {
+        SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getKey()));
+
+        Date tokenExpirationDate = getDefaultTokenExpirationDate();
+        String token = Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))
                 .setIssuer(jwtProperties.getIssuer())
                 .claim(ROLE_CLAIM, user.getRole())
-                .setExpiration(getDefaultTokenExpirationDate())
-                .signWith(SignatureAlgorithm.HS512, jwtProperties.getKey())
+                .setExpiration(tokenExpirationDate)
+                .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
+        return new JwtDTO(token, tokenExpirationDate.getTime());
     }
 
     @Override
-    public User register(UserCredentialDTO userCredentialDTO) {
-        return userService.saveUser(userCredentialDTO.getUsername(), userCredentialDTO.getPassword());
+    public UserDTO register(UserCredentialDTO userCredentialDTO) {
+        boolean userWithUsernameExists = userService.existsByUsername(userCredentialDTO.getUsername());
+
+        if (userWithUsernameExists) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with given username already exists");
+        }
+
+        User createdUser = userService.saveUser(userCredentialDTO.getUsername(), userCredentialDTO.getPassword());
+        return userMapper.toUserDTO(createdUser);
     }
 
     @Override
-    public User getAuthenticatedUser() {
-        Long userId = authenticationProvider.getAuthentication().getUserId();
-        return userService.getUserById(userId);
+    public UserDTO getAuthenticatedUser() {
+        Long userId = AuthenticationProvider.getAuthentication().getUserId();
+        User authenticatedUser = userService.getUserById(userId);
+        return userMapper.toUserDTO(authenticatedUser);
     }
 
     @Override
@@ -68,11 +106,23 @@ public class SecurityServiceImpl implements SecurityService {
                 .getBody();
 
         String principal = claims.getSubject();
-        List<SimpleGrantedAuthority> authorities = Arrays.stream(claims.get(ROLE_CLAIM).toString().split(","))
+        List<SimpleGrantedAuthority> authorities = getRoles(claims);
+
+        if (authorities.isEmpty()) {
+            return new UsernamePasswordAuthenticationToken(principal, "");
+        } else {
+            return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+        }
+    }
+
+    private List<SimpleGrantedAuthority> getRoles(Claims claims) {
+        if (isNull(claims.get(ROLE_CLAIM))) {
+            return List.of();
+        }
+
+        return Arrays.stream(claims.get(ROLE_CLAIM).toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
-
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
     private Date getDefaultTokenExpirationDate() {

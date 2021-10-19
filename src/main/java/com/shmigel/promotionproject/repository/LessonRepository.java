@@ -12,4 +12,5 @@ public interface LessonRepository extends CrudRepository<Lesson, Long> {
 
     Collection<Lesson> findAllByCourseId(Long courseId);
 
+    long countByCourseId(Long courseId);
 }

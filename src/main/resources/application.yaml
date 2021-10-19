@@ -10,6 +10,17 @@ spring:
     show-sql: true
 #    open-in-view: false
 
+cloud:
+  aws:
+    region:
+      static: us-east-2
+    stack:
+      auto: false
+    credentials:
+      access-key: AKIAVEA3ZIKRJWT6DZMC
+      secret-key: 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
+    bucket-name: spring-boot-s3-poc
+
 server:
   servlet:
     context-path: /api
@@ -20,5 +31,5 @@ logging.level:
 #  org.hibernate.type.descriptor.sql: trace
 
 jwt:
-  key: promotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKey
+  key: promotionPro123123123jectKeypromotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKey
   issuer: promotionProject

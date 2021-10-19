@@ -20,14 +20,14 @@ public class Homework {
     private Long id;
 
     @ManyToOne
-    private User student;
+    @JoinColumn(name = "user_id")
+    private Student student;
 
     @ManyToOne
     private Lesson lesson;
 
     private Integer mark;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private HomeworkFile homeworkFile;
+    private String homeworkFileKey;
 
 }

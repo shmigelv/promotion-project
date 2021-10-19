@@ -1,6 +1,7 @@
 package com.shmigel.promotionproject.controller;
 
 import com.shmigel.promotionproject.model.CourseFeedback;
+import com.shmigel.promotionproject.model.CourseStatus;
 import com.shmigel.promotionproject.model.dto.CreateCourseDTO;
 import com.shmigel.promotionproject.model.mapper.CourseMapper;
 import com.shmigel.promotionproject.model.mapper.UserMapper;
@@ -31,22 +32,19 @@ public class CoursesController {
     private UserMapper userMapper;
 
     @Autowired
-    private AuthenticationProvider authenticationProvider;
-
-    @Autowired
     private CourseFeedbackService courseFeedbackService;
 
     @PostMapping("/{courseId}/subscribe")
     public void subscribeToCourse(@PathVariable Long courseId) {
         log.info("Received request to subscribe to course with courseId: " + courseId);
-        Long userId = authenticationProvider.getAuthentication().getUserId();
+        Long userId = AuthenticationProvider.getAuthentication().getUserId();
         courseService.addStudentToCourse(userId, courseId);
     }
 
     @PostMapping
     public ResponseEntity<CourseDTO> createCourse(@RequestBody CreateCourseDTO createCourseDTO) {
         log.info("Received request to create course with information: " + createCourseDTO);
-        return ResponseEntity.ok(courseMapper.toCourseDto(courseService.createCourse(createCourseDTO)));
+        return ResponseEntity.ok(courseService.createCourse(createCourseDTO));
     }
 
     @GetMapping
@@ -55,17 +53,15 @@ public class CoursesController {
         return ResponseEntity.ok(courseMapper.toCourseDTOs(courseService.getUserCourses()));
     }
 
+    @GetMapping("/{courseId}/students/{studentId}/status")
+    public ResponseEntity<CourseStatus> getUserCourseStatus(@PathVariable Long courseId, @PathVariable Long studentId) {
+        return ResponseEntity.ok(courseService.getCourseStatus(studentId, courseId));
+    }
+
     @GetMapping("/{courseId}/students")
     public ResponseEntity<Collection<UserDTO>> getCourseStudents(@PathVariable Long courseId) {
         log.info("Received request to get students for course with id: " + courseId);
         return ResponseEntity.ok(userMapper.toUserDTOs(courseService.getCourseStudents(courseId)));
-    }
-
-    @PutMapping("/{courseId}/instructors/{instructorId}")
-    public ResponseEntity<Void> setInstructorToCourse(@PathVariable Long courseId, @PathVariable Long instructorId) {
-        log.info("Received request to set instructor course with courseId: " + courseId + " ,instructorId: " + instructorId);
-        courseService.assignInstructorToCourse(instructorId, courseId);
-        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{courseId}/students/{studentId}/feedback")
@@ -74,4 +70,15 @@ public class CoursesController {
         return ResponseEntity.ok(courseFeedbackService.createFeedback(studentId, courseId, feedback));
     }
 
+    @GetMapping("/{courseId}/lesson-details")
+    public ResponseEntity<CourseDTO> getCourseLessonDetails(@PathVariable Long courseId) {
+        return null;
+    }
+
+
+    @PutMapping("/courses/{courseId}/instructors/{instructorId}")
+    public ResponseEntity<Void> setInstructorToCourse(@PathVariable Long courseId, @PathVariable Long instructorId) {
+        courseService.assignInstructorToCourse(instructorId, courseId);
+        return ResponseEntity.ok().build();
+    }
 }

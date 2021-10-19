@@ -13,10 +13,9 @@ import java.util.Collection;
 
 import static java.util.Objects.isNull;
 
-@Service
 public class AuthenticationProvider {
 
-    public AuthenticationDTO getAuthentication() {
+    public static AuthenticationDTO getAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (isNull(authentication) || !authentication.isAuthenticated()) {
@@ -29,7 +28,7 @@ public class AuthenticationProvider {
                 .build();
     }
 
-    private Roles mapToRole(Collection<? extends GrantedAuthority> authorities) {
+    private static Roles mapToRole(Collection<? extends GrantedAuthority> authorities) {
         if (authorities.size() != 1) {
             throw new RuntimeException("Role is not set");
         }
@@ -37,7 +36,7 @@ public class AuthenticationProvider {
         return Roles.fromValue(authorities.stream().findFirst().get().getAuthority());
     }
 
-    private <T> T convert(Object value, Class<T> clazz) {
+    private static <T> T convert(Object value, Class<T> clazz) {
         if (clazz.isInstance(value)) {
             return clazz.cast(value);
         } else {

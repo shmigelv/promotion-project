@@ -1,25 +1,21 @@
 package com.shmigel.promotionproject.util;
 
-import io.micrometer.core.instrument.util.IOUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.DigestUtils;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.io.InputStream;
 
+@Log4j2
 public class IOUtil {
 
-    public static String read(MultipartFile file) {
+    public static InputStream getInputStream(MultipartFile multipartFile) {
         try {
-            return IOUtils.toString(file.getInputStream());
+            return multipartFile.getInputStream();
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while loading file");
+            log.error("Couldn't get input stream from given file");
+            throw new RuntimeException("Couldn't get input stream from given file", e);
         }
-    }
-
-    public static String getMd5Checksum(String text) {
-        return DigestUtils.md5DigestAsHex(text.getBytes());
     }
 
 }

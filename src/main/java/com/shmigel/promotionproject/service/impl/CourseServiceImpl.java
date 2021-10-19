@@ -2,9 +2,14 @@ package com.shmigel.promotionproject.service.impl;
 
 import com.shmigel.promotionproject.model.*;
 import com.shmigel.promotionproject.model.dto.AuthenticationDTO;
+import com.shmigel.promotionproject.model.dto.CourseDTO;
+import com.shmigel.promotionproject.model.dto.CourseDetailsDTO;
 import com.shmigel.promotionproject.model.dto.CreateCourseDTO;
+import com.shmigel.promotionproject.model.mapper.CourseMapper;
+import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.repository.CourseRepository;
 import com.shmigel.promotionproject.service.CourseService;
+import com.shmigel.promotionproject.service.HomeworkService;
 import com.shmigel.promotionproject.service.LessonService;
 import com.shmigel.promotionproject.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -13,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,16 +29,16 @@ public class CourseServiceImpl implements CourseService {
 
     private UserService userService;
 
-    private AuthenticationProvider authenticationProvider;
-
     private LessonService lessonService;
 
-    public CourseServiceImpl(CourseRepository courseRepository, UserService userService,
-                             AuthenticationProvider authenticationProvider, LessonService lessonService) {
+    private CourseMapper courseMapper;
+
+    public CourseServiceImpl(CourseRepository courseRepository, UserService userService, LessonService lessonService,
+                             CourseMapper courseMapper) {
         this.courseRepository = courseRepository;
         this.userService = userService;
-        this.authenticationProvider = authenticationProvider;
         this.lessonService = lessonService;
+        this.courseMapper = courseMapper;
     }
 
     @Override
@@ -66,7 +72,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public Collection<Course> getUserCourses() {
-        AuthenticationDTO authentication = authenticationProvider.getAuthentication();
+        AuthenticationDTO authentication = AuthenticationProvider.getAuthentication();
         User user = userService.getUserById(authentication.getUserId());
 
         if (user.getRole().equals(Roles.ROLE_INSTRUCTOR)) {
@@ -89,7 +95,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    public Course createCourse(CreateCourseDTO createCourseDTO) {
+    public CourseDTO createCourse(CreateCourseDTO createCourseDTO) {
         if (CollectionUtils.isEmpty(createCourseDTO.getInstructorIds())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Each course should have at least one instructor assigned to it");
         }
@@ -100,7 +106,7 @@ public class CourseServiceImpl implements CourseService {
         List<Lesson> lessons = createCourseDTO.getLessonsTiles().stream()
                 .map(i -> new Lesson(i, course)).collect(Collectors.toList());
         lessonService.saveAll(lessons);
-        return course;
+        return courseMapper.toCourseDto(course);
     }
 
     @Override
@@ -113,4 +119,33 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.save(course);
     }
 
+    @Override
+    public CourseStatus getCourseStatus(Long studentId, Long courseId) {
+        boolean studentSubscribedToCourse = isUserSubscribedToCourse(courseId, studentId);
+        if (!studentSubscribedToCourse) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student should be subscribed to given course");
+        }
+
+//        Collection<Homework> userCourseHomeworks = homeworkService.getAllHomeworksByCourseIdAndStudentId(courseId, studentId);
+        Collection<Homework> userCourseHomeworks = List.of();
+        Long lessonsInCourse = lessonService.getNumberOfLessonsByCourse(courseId);
+
+        if (userCourseHomeworks.size() != lessonsInCourse) {
+            return CourseStatus.IN_PROGRESS;
+        } else {
+            int sumOfMarks = userCourseHomeworks.stream().mapToInt(Homework::getMark).sum();
+            return sumOfMarks / lessonsInCourse >= 80 ? CourseStatus.PASSED : CourseStatus.FAILED;
+        }
+    }
+
+    @Override
+    public boolean isUserSubscribedToCourse(Long courseId, Long studentId) {
+        return courseRepository.existsByIdAndStudentsId(courseId, studentId);
+    }
+
+    @Override
+    public CourseDetailsDTO getCourseDetails(Long courseId) {
+        return courseRepository.findDetailedById(courseId).map(courseMapper::toCourseDetails)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course doesn't exist"));
+    }
 }

@@ -9,7 +9,6 @@ public enum Roles {
                 return role;
             }
         }
-
         return null;
     }
 

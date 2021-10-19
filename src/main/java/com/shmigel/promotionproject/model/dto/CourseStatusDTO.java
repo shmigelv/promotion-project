@@ -1,5 +1,6 @@
 package com.shmigel.promotionproject.model.dto;
 
+import com.shmigel.promotionproject.model.CourseStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,12 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class CourseStatusDTO {
 
-    private Long id;
-
-    private String username;
-
-    private String role;
+    private CourseStatus status;
 
 }

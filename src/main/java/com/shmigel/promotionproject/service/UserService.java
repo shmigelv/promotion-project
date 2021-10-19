@@ -4,9 +4,10 @@ import com.shmigel.promotionproject.model.Roles;
 import com.shmigel.promotionproject.model.User;
 
 import java.util.Collection;
-import java.util.Optional;
 
 public interface UserService {
+
+    User saveUser(User user);
 
     User getUserById(Long userId);
 
@@ -20,4 +21,5 @@ public interface UserService {
 
     void setUserRole(Long userId, String role);
 
+    boolean existsByUsername(String username);
 }

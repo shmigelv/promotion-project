@@ -1,16 +1,17 @@
 package com.shmigel.promotionproject.service;
 
+import com.shmigel.promotionproject.model.dto.JwtDTO;
 import com.shmigel.promotionproject.model.dto.UserCredentialDTO;
-import com.shmigel.promotionproject.model.User;
+import com.shmigel.promotionproject.model.dto.UserDTO;
 import org.springframework.security.core.Authentication;
 
 public interface SecurityService {
 
-    String login(UserCredentialDTO loginRequest);
+    JwtDTO login(UserCredentialDTO loginRequest);
 
-    User register(final UserCredentialDTO userCredentialDTO);
+    UserDTO register(final UserCredentialDTO userCredentialDTO);
 
-    User getAuthenticatedUser();
+    UserDTO getAuthenticatedUser();
 
     Authentication getAuthentication(String token);
 
