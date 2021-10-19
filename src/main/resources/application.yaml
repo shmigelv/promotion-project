@@ -31,5 +31,5 @@ logging.level:
 #  org.hibernate.type.descriptor.sql: trace
 
 jwt:
-  key: promotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKey
+  key: promotionPro123123123jectKeypromotionProjectKeypromotionProjectKeypromotionProjectKeypromotionProjectKey
   issuer: promotionProject
