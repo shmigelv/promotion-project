@@ -23,9 +23,8 @@ public class CommonConfig {
 
     @Primary
     @Bean
-    public AmazonS3 s3Client(@Value("${aws.access-key}") String accessKey, @Value("${aws.secret}") String secret) {
-        AWSCredentials awsCredentials =
-                new BasicAWSCredentials(accessKey, secret);
+    public AmazonS3 s3Client(@Value("${AWS_ACCESS_KEY_ID}") String accessKey, @Value("${AWS_SECRET_ACCESS_KEY}") String secret) {
+        AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secret);
         return AmazonS3ClientBuilder
                 .standard()
                 .withRegion(Regions.US_EAST_2)

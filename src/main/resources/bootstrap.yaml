@@ -1,3 +1,7 @@
 aws:
   secretsmanager:
-    region: us-east-2
+    name: application
+cloud:
+  aws:
+    region:
+      static: us-east-1
