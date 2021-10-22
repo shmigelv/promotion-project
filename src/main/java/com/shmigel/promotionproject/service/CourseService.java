@@ -16,6 +16,8 @@ public interface CourseService {
 
     Collection<Course> getUserCourses();
 
+    Collection<CourseDTO> getMappedUserCourses();
+
     Collection<Course> getStudentCourses(Long userId);
 
     Collection<UserDTO> getCourseStudents(Long courseId);
@@ -24,7 +26,7 @@ public interface CourseService {
 
     void assignInstructorToCourse(Long userId, Long courseId);
 
-    CourseStatusDTO getCourseStatus(Long studentId, Long courseId);
+    CourseStatusDTO getCourseStatus(Long courseId);
 
     boolean isUserSubscribedToCourse(Long courseId, Long studentId);
 

@@ -17,7 +17,7 @@ public interface LessonRepository extends CrudRepository<Lesson, Long> {
 
     long countByCourseId(Long courseId);
 
-    @Query(value = "select new com.shmigel.promotionproject.model.dto.LessonDetailsDTO(l.id, l.title, h.homeworkFileKey is null, h.mark) from Lesson l " +
+    @Query(value = "select new com.shmigel.promotionproject.model.dto.LessonDetailsDTO(l.id, l.title, h.homeworkFileKey is not null, h.mark) from Lesson l " +
             "join l.course c " +
             "join l.homeworks h " +
             "where c.id = :course_id")

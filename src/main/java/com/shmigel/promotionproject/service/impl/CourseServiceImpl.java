@@ -88,6 +88,11 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Collection<CourseDTO> getMappedUserCourses() {
+        return courseMapper.toCourseDTOs(getUserCourses());
+    }
+
+    @Override
     public Collection<Course> getStudentCourses(Long studentId) {
         return courseRepository.findAllByStudentsId(studentId);
     }
@@ -124,11 +129,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseStatusDTO getCourseStatus(Long studentId, Long courseId) {
-        if (!isUserSubscribedToCourse(courseId, studentId)) {
+    public CourseStatusDTO getCourseStatus(Long courseId) {
+        Long authenticatedUserId = authenticationProvider.getAuthenticatedUserId();
+        if (!isUserSubscribedToCourse(courseId, authenticatedUserId)) {
             throw new IllegalUserInputException("Student should be subscribed to given course");
         }
-        return new CourseStatusDTO(calculateCourseStatus(studentId, courseId));
+        return new CourseStatusDTO(calculateCourseStatus(authenticatedUserId, courseId));
     }
 
     protected CourseStatus calculateCourseStatus(Long studentId, Long courseId) {

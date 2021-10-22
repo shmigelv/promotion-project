@@ -227,7 +227,7 @@ public class CoursesControllerTest {
         courseRepository.save(newCourse);
 
         // WHEN student requests his course status
-        ResultActions resultActions = mockMvc.perform(get(String.format("/courses/%s/students/%s/status", newCourse.getId(), student.getId()))
+        ResultActions resultActions = mockMvc.perform(get(String.format("/courses/%s/status", newCourse.getId(), student.getId()))
                 .header("Authorization", "Bearer " + testUtil.getAuthToken(student)));
 
         // THEN response is IN_PROGRESS
@@ -252,7 +252,7 @@ public class CoursesControllerTest {
         homeworkRepository.save(homework);
 
         // WHEN student requests his course status
-        ResultActions resultActions = mockMvc.perform(get(String.format("/courses/%s/students/%s/status", newCourse.getId(), student.getId()))
+        ResultActions resultActions = mockMvc.perform(get(String.format("/courses/%s/status", newCourse.getId(), student.getId()))
                 .header("Authorization", "Bearer " + testUtil.getAuthToken(student)));
 
         // THEN response is PASSED
@@ -278,7 +278,7 @@ public class CoursesControllerTest {
         homeworkRepository.save(homework);
 
         // WHEN student requests his course status
-        ResultActions resultActions = mockMvc.perform(get(String.format("/courses/%s/students/%s/status", newCourse.getId(), student.getId()))
+        ResultActions resultActions = mockMvc.perform(get(String.format("/courses/%s/status", newCourse.getId(), student.getId()))
                 .header("Authorization", "Bearer " + testUtil.getAuthToken(student)));
 
         // THEN response is PASSED

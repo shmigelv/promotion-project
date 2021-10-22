@@ -102,6 +102,9 @@ public class HomeworkServiceImpl implements HomeworkService {
         Optional<Homework> homework = homeworkRepository.findByStudentIdAndLessonId(studentId, lessonId);
         if (homework.isPresent() && Objects.nonNull(homework.get().getMark())) {
             throw new IllegalUserInputException("Mark already has been set for this user lesson");
+        } else if (homework.isPresent()) {
+            homework.get().setMark(mark.getMark());
+            homeworkRepository.save(homework.get());
         } else {
             homeworkRepository.save(Homework.builder().mark(mark.getMark()).lesson(lesson).student(student).build());
         }

@@ -60,7 +60,7 @@ public class CoursesControllerTest {
 
         //THEN
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());
-        verify(courseService).getUserCourses();
+        verify(courseService).getMappedUserCourses();
     }
 
     @Test
@@ -68,14 +68,14 @@ public class CoursesControllerTest {
         //GIVEN
         var courseService = mock(CourseService.class);
         var sut = mock(CoursesController.class, withConstructor(courseService, null, null, null));
-        doCallRealMethod().when(sut).getUserCourseStatus(anyLong(), anyLong());
+        doCallRealMethod().when(sut).getStudentCourseStatus(anyLong());
 
         //WHEN
-        ResponseEntity<?> actualResult = sut.getUserCourseStatus(1L, 2L);
+        ResponseEntity<?> actualResult = sut.getStudentCourseStatus(1L);
 
         //THEN
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());
-        verify(courseService).getCourseStatus(eq(2L), eq(1L));
+        verify(courseService).getCourseStatus(eq(1L));
     }
 
     @Test

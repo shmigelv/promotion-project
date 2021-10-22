@@ -54,13 +54,13 @@ public class CoursesController {
     @GetMapping
     public ResponseEntity<Collection<CourseDTO>> getUserCourses() {
         log.info("Received request to get user courses");
-        return ResponseEntity.ok(courseMapper.toCourseDTOs(courseService.getUserCourses()));
+        return ResponseEntity.ok(courseService.getMappedUserCourses());
     }
 
     @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/{courseId}/students/{studentId}/status")
-    public ResponseEntity<CourseStatusDTO> getUserCourseStatus(@PathVariable Long courseId, @PathVariable Long studentId) {
-        return ResponseEntity.ok(courseService.getCourseStatus(studentId, courseId));
+    @GetMapping("/{courseId}/status")
+    public ResponseEntity<CourseStatusDTO> getStudentCourseStatus(@PathVariable Long courseId) {
+        return ResponseEntity.ok(courseService.getCourseStatus(courseId));
     }
 
     @PreAuthorize("hasRole('INSTRUCTOR')")

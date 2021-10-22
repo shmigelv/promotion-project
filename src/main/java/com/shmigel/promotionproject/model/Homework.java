@@ -19,11 +19,11 @@ public class Homework {
     @GeneratedValue(generator = "homeworks_id_seq")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id")
     private Student student;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Lesson lesson;
 
     private Integer mark;

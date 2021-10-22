@@ -225,14 +225,14 @@ public class CourseServiceImplTest {
         //GIVEN
         var courseRepository = mock(CourseRepository.class);
         var userService = mock(UserService.class);
-        var sut = mock(CourseServiceImpl.class, withConstructor(courseRepository, userService, null, null, null, null, null));
-        doCallRealMethod().when(sut).getCourseStatus(anyLong(), anyLong());
+        var sut = mock(CourseServiceImpl.class, withConstructor(courseRepository, userService, null, null, null, null, mock(AuthenticationProvider.class)));
+        doCallRealMethod().when(sut).getCourseStatus(anyLong());
 
         when(sut.isUserSubscribedToCourse(anyLong(), anyLong())).thenReturn(true);
         when(sut.calculateCourseStatus(anyLong(), anyLong())).thenReturn(CourseStatus.PASSED);
 
         //WHEN
-        CourseStatusDTO actualResult = sut.getCourseStatus(1L, 2L);
+        CourseStatusDTO actualResult = sut.getCourseStatus(1L);
 
         //THEN
         assertEquals(CourseStatus.PASSED, actualResult.getStatus());
