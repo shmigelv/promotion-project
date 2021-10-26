@@ -20,7 +20,7 @@ public class CoursesControllerTest {
     void subscribeToCourse_checkResult() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CoursesController.class, withConstructor(courseService, null, null, null));
+        var sut = mock(CoursesController.class, withConstructor(courseService, null, null));
         doCallRealMethod().when(sut).subscribeToCourse(anyLong());
 
         //WHEN
@@ -35,7 +35,7 @@ public class CoursesControllerTest {
     void createCourse_checkResult() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CoursesController.class, withConstructor(courseService, null, null, null));
+        var sut = mock(CoursesController.class, withConstructor(courseService, null, null));
         doCallRealMethod().when(sut).createCourse(any());
 
         var createCourseDTO = mock(CreateCourseDTO.class);
@@ -52,7 +52,7 @@ public class CoursesControllerTest {
     void getUserCourses_checkResult() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CoursesController.class, withConstructor(courseService, mock(CourseMapper.class), null, null));
+        var sut = mock(CoursesController.class, withConstructor(courseService,null, null));
         doCallRealMethod().when(sut).getUserCourses();
 
         //WHEN
@@ -67,7 +67,7 @@ public class CoursesControllerTest {
     void getUserCourseStatus_checkResult() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CoursesController.class, withConstructor(courseService, null, null, null));
+        var sut = mock(CoursesController.class, withConstructor(courseService, null, null));
         doCallRealMethod().when(sut).getStudentCourseStatus(anyLong());
 
         //WHEN
@@ -82,7 +82,7 @@ public class CoursesControllerTest {
     void getCourseStudents_checkResult() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CoursesController.class, withConstructor(courseService, null, null, null));
+        var sut = mock(CoursesController.class, withConstructor(courseService, null, null));
         doCallRealMethod().when(sut).getCourseStudents(anyLong());
 
         //WHEN
@@ -97,7 +97,7 @@ public class CoursesControllerTest {
     void createFeedback_checkResult() {
         //GIVEN
         var courseFeedbackService = mock(CourseFeedbackService.class);
-        var sut = mock(CoursesController.class, withConstructor(null, null, courseFeedbackService, null));
+        var sut = mock(CoursesController.class, withConstructor(null, courseFeedbackService, null));
         doCallRealMethod().when(sut).createFeedback(anyLong(), anyLong(), anyString());
 
         //WHEN
@@ -112,7 +112,7 @@ public class CoursesControllerTest {
     void getCourseLessonDetails_checkResult() {
         //GIVEN
         var lessonService = mock(LessonService.class);
-        var sut = mock(CoursesController.class, withConstructor(null, null, null, lessonService));
+        var sut = mock(CoursesController.class, withConstructor(null, null, lessonService));
         doCallRealMethod().when(sut).getCourseLessonDetails(anyLong());
 
         //WHEN
@@ -127,7 +127,7 @@ public class CoursesControllerTest {
     void setInstructorToCourse_checkResult() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CoursesController.class, withConstructor(courseService, null, null, null));
+        var sut = mock(CoursesController.class, withConstructor(courseService, null, null));
         doCallRealMethod().when(sut).setInstructorToCourse(anyLong(), anyLong());
 
         //WHEN
@@ -138,9 +138,8 @@ public class CoursesControllerTest {
         verify(courseService).assignInstructorToCourse(eq(2L), eq(1L));
     }
 
-    private MockSettings withConstructor(CourseService courseService, CourseMapper courseMapper,
-                                         CourseFeedbackService courseFeedbackService, LessonService lessonService) {
-        return withSettings().useConstructor(courseService, courseMapper, courseFeedbackService, lessonService);
+    private MockSettings withConstructor(CourseService courseService, CourseFeedbackService courseFeedbackService, LessonService lessonService) {
+        return withSettings().useConstructor(courseService, courseFeedbackService, lessonService);
     }
 
 }

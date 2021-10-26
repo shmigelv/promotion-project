@@ -4,7 +4,6 @@ import com.shmigel.promotionproject.exception.IllegalUserInputException;
 import com.shmigel.promotionproject.model.Course;
 import com.shmigel.promotionproject.model.CourseFeedback;
 import com.shmigel.promotionproject.model.Student;
-import com.shmigel.promotionproject.model.User;
 import com.shmigel.promotionproject.model.dto.CourseFeedbackDTO;
 import com.shmigel.promotionproject.model.mapper.CourseFeedbackMapper;
 import com.shmigel.promotionproject.repository.CourseFeedbackRepository;

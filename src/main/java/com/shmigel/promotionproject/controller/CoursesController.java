@@ -1,11 +1,9 @@
 package com.shmigel.promotionproject.controller;
 
 import com.shmigel.promotionproject.model.dto.*;
-import com.shmigel.promotionproject.model.mapper.CourseMapper;
 import com.shmigel.promotionproject.service.CourseFeedbackService;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.LessonService;
-import com.shmigel.promotionproject.service.impl.AuthenticationProvider;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,16 +18,12 @@ public class CoursesController {
 
     private final CourseService courseService;
 
-    private final CourseMapper courseMapper;
-
     private final CourseFeedbackService courseFeedbackService;
 
     private final LessonService lessonService;
 
-    public CoursesController(CourseService courseService, CourseMapper courseMapper,
-                             CourseFeedbackService courseFeedbackService, LessonService lessonService) {
+    public CoursesController(CourseService courseService, CourseFeedbackService courseFeedbackService, LessonService lessonService) {
         this.courseService = courseService;
-        this.courseMapper = courseMapper;
         this.courseFeedbackService = courseFeedbackService;
         this.lessonService = lessonService;
     }

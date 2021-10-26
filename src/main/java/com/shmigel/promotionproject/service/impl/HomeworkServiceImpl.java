@@ -3,11 +3,13 @@ package com.shmigel.promotionproject.service.impl;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.shmigel.promotionproject.exception.IllegalUserInputException;
-import com.shmigel.promotionproject.model.*;
+import com.shmigel.promotionproject.model.Homework;
+import com.shmigel.promotionproject.model.Instructor;
+import com.shmigel.promotionproject.model.Lesson;
+import com.shmigel.promotionproject.model.Student;
 import com.shmigel.promotionproject.model.dto.AuthenticationDTO;
 import com.shmigel.promotionproject.model.dto.MarkDTO;
 import com.shmigel.promotionproject.repository.HomeworkRepository;
-import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.HomeworkService;
 import com.shmigel.promotionproject.service.LessonService;
 import com.shmigel.promotionproject.service.UserService;
@@ -15,14 +17,12 @@ import com.shmigel.promotionproject.util.IOUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class HomeworkServiceImpl implements HomeworkService {

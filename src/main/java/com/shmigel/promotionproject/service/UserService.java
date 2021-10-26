@@ -1,7 +1,6 @@
 package com.shmigel.promotionproject.service;
 
 import com.shmigel.promotionproject.model.Instructor;
-import com.shmigel.promotionproject.model.Roles;
 import com.shmigel.promotionproject.model.Student;
 import com.shmigel.promotionproject.model.User;
 
