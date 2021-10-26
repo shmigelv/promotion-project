@@ -3,10 +3,7 @@ package com.shmigel.promotionproject.service.impl;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.shmigel.promotionproject.exception.IllegalUserInputException;
-import com.shmigel.promotionproject.model.Homework;
-import com.shmigel.promotionproject.model.Instructor;
-import com.shmigel.promotionproject.model.Lesson;
-import com.shmigel.promotionproject.model.Student;
+import com.shmigel.promotionproject.model.*;
 import com.shmigel.promotionproject.model.dto.AuthenticationDTO;
 import com.shmigel.promotionproject.model.dto.MarkDTO;
 import com.shmigel.promotionproject.repository.HomeworkRepository;
@@ -87,14 +84,9 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Override
     public void putStudentMarkForLesson(Long studentId, Long lessonId, MarkDTO mark) {
         Lesson lesson = lessonService.getLessonById(lessonId);
-        AuthenticationDTO authentication = authenticationProvider.getAuthentication();
-        Instructor currentUser = userService.getInstructorById(authentication.getUserId());
+        validateCurrentUserCanPutStudentMark(lesson, authenticationProvider.getAuthentication());
+
         Student student = userService.getStudentById(studentId);
-
-        if (!currentUser.getCourses().contains(lesson.getCourse())) {
-            throw new IllegalUserInputException("Instructor can only put marks for his courses");
-        }
-
         if (!student.getCourses().contains(lesson.getCourse())) {
             throw new IllegalUserInputException("Given student is not subscribed to that course");
         }
@@ -107,6 +99,17 @@ public class HomeworkServiceImpl implements HomeworkService {
             homeworkRepository.save(homework.get());
         } else {
             homeworkRepository.save(Homework.builder().mark(mark.getMark()).lesson(lesson).student(student).build());
+        }
+    }
+
+    protected void validateCurrentUserCanPutStudentMark(Lesson lesson, AuthenticationDTO authentication) {
+        if (authentication.getRole().equals(Roles.ROLE_ADMIN)) {
+            return;
+        }
+
+        Instructor currentUser = userService.getInstructorById(authentication.getUserId());
+        if (!currentUser.getCourses().contains(lesson.getCourse())) {
+            throw new IllegalUserInputException("Instructor can only put marks for his courses");
         }
     }
 

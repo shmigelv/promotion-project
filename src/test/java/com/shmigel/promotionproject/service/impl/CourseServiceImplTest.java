@@ -48,15 +48,12 @@ public class CourseServiceImplTest {
     void addStudentToCourse_verifySave() {
         //GIVEN
         var courseRepository = mock(CourseRepository.class);
-        var authenticationProvider = mock(AuthenticationProvider.class);
         var userService = mock(UserService.class);
-        var sut = mock(CourseServiceImpl.class, withConstructor(courseRepository, userService, null, null, null, null, authenticationProvider));
-        doCallRealMethod().when(sut).addStudentToCourse(anyLong());
+        var sut = mock(CourseServiceImpl.class, withConstructor(courseRepository, userService, null, null, null, null, mock(AuthenticationProvider.class)));
+        doCallRealMethod().when(sut).addStudentToCourse(anyLong(), anyLong());
 
         var course = mock(Course.class);
         when(sut.getCourseById(anyLong())).thenReturn(course);
-
-        when(authenticationProvider.getAuthenticatedUserId()).thenReturn(1L);
 
         var student = mock(Student.class);
         when(userService.getStudentById(anyLong())).thenReturn(student);
@@ -68,7 +65,7 @@ public class CourseServiceImplTest {
         when(courseRepository.save(any())).thenReturn(savedCourse);
 
         //WHEN
-        sut.addStudentToCourse(1L);
+        sut.addStudentToCourse(1L, 2L);
 
         //THEN
         verify(courseRepository).save(eq(course));

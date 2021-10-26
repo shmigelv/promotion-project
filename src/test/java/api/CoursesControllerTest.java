@@ -63,7 +63,7 @@ public class CoursesControllerTest {
         Course course = courseRepository.save(new Course("course"));
 
         // WHEN student subscribes to the course
-        mockMvc.perform(post("/courses/" + course.getId() + "/subscribe")
+        mockMvc.perform(post("/courses/" + course.getId() + "/students/" + student.getId())
                         .header("Authorization", "Bearer " + testUtil.getAuthToken(student)))
                 .andExpect(status().isOk());
 

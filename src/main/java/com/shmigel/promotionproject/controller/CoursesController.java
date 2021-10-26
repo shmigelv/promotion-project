@@ -28,12 +28,11 @@ public class CoursesController {
         this.lessonService = lessonService;
     }
 
-
-    @PreAuthorize("hasRole('STUDENT')")
-    @PostMapping("/{courseId}/subscribe")
-    public ResponseEntity<Void> subscribeToCourse(@PathVariable Long courseId) {
+    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
+    @PostMapping("/{courseId}/students/{studentId}")
+    public ResponseEntity<Void> subscribeToCourse(@PathVariable Long courseId, @PathVariable Long studentId) {
         log.info("Received request to subscribe to course with courseId: " + courseId);
-        courseService.addStudentToCourse(courseId);
+        courseService.addStudentToCourse(courseId, studentId);
         return ResponseEntity.ok().build();
     }
 
@@ -64,7 +63,7 @@ public class CoursesController {
         return ResponseEntity.ok(courseService.getCourseStudents(courseId));
     }
 
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("hasAnyRole('INSTRUCTOR', 'ADMIN')")
     @PostMapping("/{courseId}/students/{studentId}/feedback")
     public ResponseEntity<CourseFeedbackDTO> createFeedback(@PathVariable Long courseId, @PathVariable Long studentId,
                                                             @RequestBody String feedback) {

@@ -57,9 +57,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void addStudentToCourse(Long courseId) {
-        Long studentId = authenticationProvider.getAuthenticatedUserId();
-
+    public void addStudentToCourse(Long courseId, Long studentId) {
         Course targetCourse = getCourseById(courseId);
         Student student = userService.getStudentById(studentId);
         Collection<Course> studentCourses = student.getCourses();

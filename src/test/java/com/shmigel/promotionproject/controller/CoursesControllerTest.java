@@ -21,13 +21,13 @@ public class CoursesControllerTest {
         //GIVEN
         var courseService = mock(CourseService.class);
         var sut = mock(CoursesController.class, withConstructor(courseService, null, null));
-        doCallRealMethod().when(sut).subscribeToCourse(anyLong());
+        doCallRealMethod().when(sut).subscribeToCourse(anyLong(), anyLong());
 
         //WHEN
-        ResponseEntity<Void> actualResult = sut.subscribeToCourse(1L);
+        ResponseEntity<Void> actualResult = sut.subscribeToCourse(1L, 2L);
 
         //THEN
-        verify(courseService).addStudentToCourse(eq(1L));
+        verify(courseService).addStudentToCourse(eq(1L), eq(2L));
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());
     }
 

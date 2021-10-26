@@ -3,7 +3,9 @@ package com.shmigel.promotionproject.service.impl;
 import com.shmigel.promotionproject.exception.IllegalUserInputException;
 import com.shmigel.promotionproject.model.Course;
 import com.shmigel.promotionproject.model.CourseFeedback;
+import com.shmigel.promotionproject.model.Roles;
 import com.shmigel.promotionproject.model.Student;
+import com.shmigel.promotionproject.model.dto.AuthenticationDTO;
 import com.shmigel.promotionproject.model.mapper.CourseFeedbackMapper;
 import com.shmigel.promotionproject.repository.CourseFeedbackRepository;
 import com.shmigel.promotionproject.service.CourseService;
@@ -89,8 +91,13 @@ class CourseFeedbackServiceImplTest {
     void validateStudentAndInstructorSubscribedToCourse_verifyException_whenStudentNotSubscribedToCourse() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CourseFeedbackServiceImpl.class, withConstructor(null, null, courseService, null));
+        var authenticationProvider = mock(AuthenticationProvider.class);
+        var sut = mock(CourseFeedbackServiceImpl.class, withConstructor(null, null, courseService, null, authenticationProvider));
         doCallRealMethod().when(sut).validateStudentAndInstructorSubscribedToCourse(any(), any());
+
+        var authentication = mock(AuthenticationDTO.class);
+        when(authenticationProvider.getAuthentication()).thenReturn(authentication);
+        when(authentication.getRole()).thenReturn(Roles.ROLE_INSTRUCTOR);
 
         var student = mock(Student.class);
         when(student.getCourses()).thenReturn(List.of());
@@ -107,8 +114,13 @@ class CourseFeedbackServiceImplTest {
     void validateStudentAndInstructorSubscribedToCourse_verifyException_whenInstructorNotSubscribedToCourse() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CourseFeedbackServiceImpl.class, withConstructor(null, null, courseService, null));
+        var authenticationProvider = mock(AuthenticationProvider.class);
+        var sut = mock(CourseFeedbackServiceImpl.class, withConstructor(null, null, courseService, null, authenticationProvider));
         doCallRealMethod().when(sut).validateStudentAndInstructorSubscribedToCourse(any(), any());
+
+        var authentication = mock(AuthenticationDTO.class);
+        when(authenticationProvider.getAuthentication()).thenReturn(authentication);
+        when(authentication.getRole()).thenReturn(Roles.ROLE_INSTRUCTOR);
 
         var student = mock(Student.class);
         var course = mock(Course.class);
@@ -123,7 +135,12 @@ class CourseFeedbackServiceImplTest {
 
     private MockSettings withConstructor(CourseFeedbackRepository courseFeedbackRepository, UserService userService,
                                          CourseService courseService, CourseFeedbackMapper courseFeedbackMapper) {
-        return withSettings().useConstructor(courseFeedbackRepository, userService, courseService, courseFeedbackMapper);
+        return withConstructor(courseFeedbackRepository, userService, courseService, courseFeedbackMapper, mock(AuthenticationProvider.class));
+    }
+
+    private MockSettings withConstructor(CourseFeedbackRepository courseFeedbackRepository, UserService userService,
+                                         CourseService courseService, CourseFeedbackMapper courseFeedbackMapper, AuthenticationProvider authenticationProvider) {
+        return withSettings().useConstructor(courseFeedbackRepository, userService, courseService, courseFeedbackMapper, authenticationProvider);
     }
 
 }

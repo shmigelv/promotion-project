@@ -10,7 +10,7 @@ import java.util.Collection;
 
 public interface CourseService {
 
-    void addStudentToCourse(Long courseId);
+    void addStudentToCourse(Long courseId, Long studentId);
 
     Course getCourseById(Long courseId);
 
