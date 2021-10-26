@@ -19,7 +19,7 @@ public interface LessonRepository extends CrudRepository<Lesson, Long> {
 
     @Query(value = "select new com.shmigel.promotionproject.model.dto.LessonDetailsDTO(l.id, l.title, h.homeworkFileKey is not null, h.mark) from Lesson l " +
             "join l.course c " +
-            "join l.homeworks h " +
+            "left join l.homeworks h " +
             "where c.id = :course_id")
     List<LessonDetailsDTO> getCourseLessonDetails(@Param("course_id") Long courseId);
 }
