@@ -81,7 +81,7 @@ public class CourseServiceImpl implements CourseService {
 
         if (user.getRole().equals(Roles.ROLE_INSTRUCTOR)) {
             return courseRepository.findAllByInstructorsId(user.getId());
-        } else if (user.getRole().equals(Roles.ROLE_STUDENT)){
+        } else if (user.getRole().equals(Roles.ROLE_STUDENT)) {
             return courseRepository.findAllByStudentsId(user.getId());
         } else {
             return List.of();
