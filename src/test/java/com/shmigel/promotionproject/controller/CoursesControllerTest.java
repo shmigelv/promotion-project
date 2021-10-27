@@ -6,6 +6,7 @@ import com.shmigel.promotionproject.model.mapper.CourseMapper;
 import com.shmigel.promotionproject.service.CourseFeedbackService;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.LessonService;
+import com.shmigel.promotionproject.service.impl.AuthenticationProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockSettings;
 import org.springframework.http.HttpStatus;
@@ -20,11 +21,14 @@ public class CoursesControllerTest {
     void subscribeToCourse_checkResult() {
         //GIVEN
         var courseService = mock(CourseService.class);
-        var sut = mock(CoursesController.class, withConstructor(courseService, null, null));
-        doCallRealMethod().when(sut).subscribeToCourse(anyLong(), anyLong());
+        var authenticationProvider = mock(AuthenticationProvider.class);
+        var sut = mock(CoursesController.class, withConstructor(courseService, null, null, authenticationProvider));
+        doCallRealMethod().when(sut).subscribeToCourse(anyLong());
+
+        when(authenticationProvider.getAuthenticatedUserId()).thenReturn(2L);
 
         //WHEN
-        ResponseEntity<Void> actualResult = sut.subscribeToCourse(1L, 2L);
+        ResponseEntity<Void> actualResult = sut.subscribeToCourse(1L);
 
         //THEN
         verify(courseService).addStudentToCourse(eq(1L), eq(2L));
@@ -139,7 +143,11 @@ public class CoursesControllerTest {
     }
 
     private MockSettings withConstructor(CourseService courseService, CourseFeedbackService courseFeedbackService, LessonService lessonService) {
-        return withSettings().useConstructor(courseService, courseFeedbackService, lessonService);
+        return withConstructor(courseService, courseFeedbackService, lessonService, mock(AuthenticationProvider.class));
+    }
+
+    private MockSettings withConstructor(CourseService courseService, CourseFeedbackService courseFeedbackService, LessonService lessonService, AuthenticationProvider authenticationProvider) {
+        return withSettings().useConstructor(courseService, courseFeedbackService, lessonService, authenticationProvider);
     }
 
 }

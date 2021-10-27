@@ -19,15 +19,26 @@ public class LessonController {
 
     private final HomeworkMapper homeworkMapper;
 
-    public LessonController(HomeworkService homeworkService, HomeworkMapper homeworkMapper) {
+    private final AuthenticationProvider authenticationProvider;
+
+    public LessonController(HomeworkService homeworkService, HomeworkMapper homeworkMapper, AuthenticationProvider authenticationProvider) {
         this.homeworkService = homeworkService;
         this.homeworkMapper = homeworkMapper;
+        this.authenticationProvider = authenticationProvider;
     }
 
-    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STUDENT')")
+    @PostMapping("/{lessonId}/homeworks")
+    public ResponseEntity<HomeworkDTO> uploadHomework(@PathVariable Long lessonId, @RequestParam("file") final MultipartFile file) {
+        Long studentId = authenticationProvider.getAuthenticatedUserId();
+        Homework homework = homeworkService.uploadHomework(studentId, lessonId, file);
+        return ResponseEntity.ok(homeworkMapper.toHomeworkDTO(homework));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping("/{lessonId}/students/{studentId}/homeworks")
-    public ResponseEntity<HomeworkDTO> uploadHomework(@PathVariable Long lessonId, @PathVariable Long studentId,
-                                                      @RequestParam("file") final MultipartFile file) {
+    public ResponseEntity<HomeworkDTO> uploadHomeworkForUser(@PathVariable Long lessonId, @PathVariable Long studentId,
+                                                             @RequestParam("file") final MultipartFile file) {
         Homework homework = homeworkService.uploadHomework(studentId, lessonId, file);
         return ResponseEntity.ok(homeworkMapper.toHomeworkDTO(homework));
     }

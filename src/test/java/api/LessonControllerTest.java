@@ -59,7 +59,7 @@ public class LessonControllerTest {
 
         // WHEN
         ResultActions resultActions = mockMvc.perform(
-                multipart("/lessons/" + lesson.getId() + "/students/" + student.getId() + "/homeworks")
+                multipart("/lessons/" + lesson.getId() + "/homeworks")
                         .file(homeworkFile)
                         .header("Authorization", "Bearer " + testUtil.getAuthToken(student)));
 

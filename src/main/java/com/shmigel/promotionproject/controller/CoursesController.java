@@ -4,6 +4,7 @@ import com.shmigel.promotionproject.model.dto.*;
 import com.shmigel.promotionproject.service.CourseFeedbackService;
 import com.shmigel.promotionproject.service.CourseService;
 import com.shmigel.promotionproject.service.LessonService;
+import com.shmigel.promotionproject.service.impl.AuthenticationProvider;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,15 +23,27 @@ public class CoursesController {
 
     private final LessonService lessonService;
 
-    public CoursesController(CourseService courseService, CourseFeedbackService courseFeedbackService, LessonService lessonService) {
+    private final AuthenticationProvider authenticationProvider;
+
+    public CoursesController(CourseService courseService, CourseFeedbackService courseFeedbackService, LessonService lessonService,
+                             AuthenticationProvider authenticationProvider) {
         this.courseService = courseService;
         this.courseFeedbackService = courseFeedbackService;
         this.lessonService = lessonService;
+        this.authenticationProvider = authenticationProvider;
     }
 
-    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/{courseId}/subscribe")
+    public ResponseEntity<Void> subscribeToCourse(@PathVariable Long courseId) {
+        log.info("Received request to subscribe to course with courseId: " + courseId);
+        courseService.addStudentToCourse(courseId, authenticationProvider.getAuthenticatedUserId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{courseId}/students/{studentId}")
-    public ResponseEntity<Void> subscribeToCourse(@PathVariable Long courseId, @PathVariable Long studentId) {
+    public ResponseEntity<Void> subscribeUserToCourse(@PathVariable Long courseId, @PathVariable Long studentId) {
         log.info("Received request to subscribe to course with courseId: " + courseId);
         courseService.addStudentToCourse(courseId, studentId);
         return ResponseEntity.ok().build();

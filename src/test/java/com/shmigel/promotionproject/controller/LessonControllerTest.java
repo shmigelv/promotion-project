@@ -20,13 +20,16 @@ public class LessonControllerTest {
     void uploadHomework_checkResult() {
         //GIVEN
         var homeworkService = mock(HomeworkService.class);
-        var sut = mock(LessonController.class, withConstructor(homeworkService, mock(HomeworkMapper.class)));
-        doCallRealMethod().when(sut).uploadHomework(anyLong(), anyLong(), any());
+        var authenticationProvider = mock(AuthenticationProvider.class);
+        var sut = mock(LessonController.class, withConstructor(homeworkService, mock(HomeworkMapper.class), authenticationProvider));
+        doCallRealMethod().when(sut).uploadHomework(anyLong(), any());
+
+        when(authenticationProvider.getAuthenticatedUserId()).thenReturn(2L);
 
         var multipartFile = mock(MultipartFile.class);
 
         //WHEN
-        ResponseEntity<?> actualResult = sut.uploadHomework(1L, 2L, multipartFile);
+        ResponseEntity<?> actualResult = sut.uploadHomework(1L, multipartFile);
 
         //THEN
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());
@@ -37,7 +40,7 @@ public class LessonControllerTest {
     void putMarkForStudentLesson_checkResult() {
         //GIVEN
         var homeworkService = mock(HomeworkService.class);
-        var sut = mock(LessonController.class, withConstructor(homeworkService, mock(HomeworkMapper.class)));
+        var sut = mock(LessonController.class, withConstructor(homeworkService, mock(HomeworkMapper.class), mock(AuthenticationProvider.class)));
         doCallRealMethod().when(sut).putMarkForStudentLesson(anyLong(), anyLong(), any());
 
         var markDTO = mock(MarkDTO.class);
@@ -50,8 +53,8 @@ public class LessonControllerTest {
         verify(homeworkService).putStudentMarkForLesson(eq(2L), eq(1L), eq(markDTO));
     }
 
-    private MockSettings withConstructor(HomeworkService homeworkService, HomeworkMapper homeworkMapper) {
-        return withSettings().useConstructor(homeworkService, homeworkMapper);
+    private MockSettings withConstructor(HomeworkService homeworkService, HomeworkMapper homeworkMapper, AuthenticationProvider authenticationProvider) {
+        return withSettings().useConstructor(homeworkService, homeworkMapper, authenticationProvider);
     }
 
 }
